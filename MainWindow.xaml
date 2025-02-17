@@ -3,20 +3,24 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="LKtunnel - VPN Client" Height="400" Width="600" WindowStyle="SingleBorderWindow" ResizeMode="CanResizeWithGrip">
     <Grid>
-       
-
         <!-- Main Content Section -->
         <StackPanel VerticalAlignment="Top">
+            <!-- ComboBox to select protocol -->
+            <ComboBox Name="ProtocolComboBox" Width="200" Margin="10" SelectionChanged="ProtocolComboBox_SelectionChanged">
+                <ComboBoxItem Content="OpenVPN" />
+                <ComboBoxItem Content="WireGuard" />
+                <ComboBoxItem Content="Shadowsocks" />
+                <ComboBoxItem Content="V2Ray" />
+                <ComboBoxItem Content="SSH Tunneling" />
+            </ComboBox>
+
+            <!-- Other Buttons for Theme and Navigation -->
             <Button Name="ToggleThemeButton" Content="Toggle Dark Mode" Click="ToggleTheme_Click" Margin="10"/>
             <Button Name="DashboardButton" Content="Dashboard" Click="Dashboard_Click"/>
-            <Button Name="OpenVPNButton" Content="OpenVPN" Click="OpenVPN_Click"/>
-            <Button Name="WireGuardButton" Content="WireGuard" Click="WireGuard_Click"/>
-            <Button Name="ShadowsocksButton" Content="Shadowsocks" Click="Shadowsocks_Click"/>
-            <Button Name="V2RayButton" Content="V2Ray" Click="V2Ray_Click"/>
-            <Button Name="SSHButton" Content="SSH Tunneling" Click="SSH_Click"/>
             <Button Name="LogsButton" Content="Logs" Click="Logs_Click"/>
         </StackPanel>
 
+        <!-- Main content for each protocol -->
         <ContentControl x:Name="MainContent" Margin="150,40,0,0"/>
     </Grid>
 </Window>

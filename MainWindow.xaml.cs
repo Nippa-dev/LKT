@@ -7,8 +7,8 @@ namespace LKtunnel
 {
     public partial class MainWindow : Window
     {
-        private bool isDarkMode; // Track whether dark mode or light mode is active
-        private bool isUserThemeSelected = false; // Track if the user has selected a theme
+        private bool isDarkMode;
+        private bool isUserThemeSelected = false;
 
         public MainWindow()
         {
@@ -17,10 +17,10 @@ namespace LKtunnel
             ApplyTheme();
         }
 
-        // Detect the system theme (light or dark)
+        // Detect system theme and apply it to the app
         private void DetectSystemTheme()
         {
-            var registryKey = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", null);
+            var registryKey = Microsoft.Win32.Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", null);
             if (registryKey != null)
             {
                 isDarkMode = (int)registryKey == 0; // 0 = Dark mode, 1 = Light mode
@@ -31,7 +31,7 @@ namespace LKtunnel
             }
         }
 
-        // Apply the theme based on current mode
+        // Apply the current theme (dark or light mode)
         private void ApplyTheme()
         {
             Application.Current.Resources.MergedDictionaries.Clear();
@@ -40,8 +40,7 @@ namespace LKtunnel
             Application.Current.Resources.MergedDictionaries.Add(resourceDictionary);
         }
 
-
-        // Toggle between dark mode and light mode when the button is clicked
+        // Toggle the theme when the button is clicked
         private void ToggleTheme_Click(object sender, RoutedEventArgs e)
         {
             if (!isUserThemeSelected)
@@ -55,16 +54,52 @@ namespace LKtunnel
             ApplyTheme();
         }
 
-        // Close the application when the custom close button is clicked
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        // Handle protocol selection from ComboBox
+        private void ProtocolComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            this.Close();
+            ComboBoxItem selectedItem = ProtocolComboBox.SelectedItem as ComboBoxItem;
+
+            if (selectedItem != null)
+            {
+                string selectedProtocol = selectedItem.Content.ToString();
+                LoadProtocolPage(selectedProtocol);
+            }
         }
-    
+
+        // Load the page corresponding to the selected protocol
+        private void LoadProtocolPage(string protocol)
+        {
+            // Remove existing content
+            MainContent.Content = null;
+
+            // Load the correct page based on the selected protocol
+            switch (protocol)
+            {
+                case "OpenVPN":
+                    MainContent.Content = new OpenVPN();
+                    break;
+                case "WireGuard":
+                    MainContent.Content = new WireGuard();
+                    break;
+                case "Shadowsocks":
+                    MainContent.Content = new Shadowsocks();
+                    break;
+                case "V2Ray":
+                    MainContent.Content = new V2Ray();
+                    break;
+                case "SSH Tunneling":
+                    MainContent.Content = new SSH();
+                    break;
+                default:
+                    break;
+            }
+        }
 
 
 
-private void LoadPage(UserControl page)
+
+
+        private void LoadPage(UserControl page)
         {
             MainContent.Content = page;
         }
