@@ -4,6 +4,7 @@
         Title="LKtunnel - VPN Client" Height="400" Width="600">
     <Grid>
         <StackPanel>
+            <Button Name="ToggleDarkModeButton" Content="Toggle Dark Mode" Click="ToggleDarkMode_Click"/>
             <Button Name="DashboardButton" Content="Dashboard" Click="Dashboard_Click"/>
             <Button Name="OpenVPNButton" Content="OpenVPN" Click="OpenVPN_Click"/>
             <Button Name="WireGuardButton" Content="WireGuard" Click="WireGuard_Click"/>
