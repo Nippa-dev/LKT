@@ -1,0 +1,13 @@
+﻿<UserControl x:Class="LKtunnel.V2Ray"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <TextBlock Text="V2Ray Configuration" FontSize="20"/>
+        <TextBlock Text="Config Path:"/>
+        <TextBox Name="V2RayConfigPath" Width="300"/>
+
+        <Button Content="Browse" Click="BrowseConfig_Click"/>
+        <Button Content="Connect" Click="Connect_Click"/>
+        <Button Content="Disconnect" Click="Disconnect_Click"/>
+    </Grid>
+</UserControl>

@@ -1,0 +1,13 @@
+﻿<UserControl x:Class="LKtunnel.Logs"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <StackPanel>
+            <TextBlock Text="Connection Logs" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
+            <ScrollViewer Height="300">
+                <TextBox Name="LogBox" IsReadOnly="True" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
+            </ScrollViewer>
+            <Button Content="Clear Logs" Width="150" Height="40" Click="ClearLogs_Click" HorizontalAlignment="Center"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

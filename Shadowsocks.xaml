@@ -1,0 +1,19 @@
+﻿<UserControl x:Class="LKtunnel.Shadowsocks"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:LKtunnel">
+    <Grid>
+        <TextBlock Text="Shadowsocks Configuration" FontSize="20" />
+        <TextBlock Text="Server:" />
+        <TextBox Name="ShadowsocksServer" Width="200"/>
+
+        <TextBlock Text="Port:" />
+        <TextBox Name="ShadowsocksPort" Width="100"/>
+
+        <TextBlock Text="Password:" />
+        <PasswordBox Name="ShadowsocksPassword" Width="200"/>
+
+        <Button Content="Connect" Click="Connect_Click"/>
+        <Button Content="Disconnect" Click="Disconnect_Click"/>
+    </Grid>
+</UserControl>
