@@ -3,17 +3,22 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:LKtunnel">
     <Grid>
-        <TextBlock Text="Shadowsocks Configuration" FontSize="20" />
-        <TextBlock Text="Server:" />
-        <TextBox Name="ShadowsocksServer" Width="200"/>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
+            <TextBlock Text="Shadowsocks Configuration" FontSize="20" HorizontalAlignment="Center" Margin="0,10,0,10"/>
 
-        <TextBlock Text="Port:" />
-        <TextBox Name="ShadowsocksPort" Width="100"/>
+            <TextBlock Text="Server:"/>
+            <TextBox Name="ShadowsocksServer" Width="250" Margin="5"/>
 
-        <TextBlock Text="Password:" />
-        <PasswordBox Name="ShadowsocksPassword" Width="200"/>
+            <TextBlock Text="Port:"/>
+            <TextBox Name="ShadowsocksPort" Width="100" Margin="5"/>
 
-        <Button Content="Connect" Click="Connect_Click"/>
-        <Button Content="Disconnect" Click="Disconnect_Click"/>
+            <TextBlock Text="Password:"/>
+            <PasswordBox Name="ShadowsocksPassword" Width="250" Margin="5"/>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
+                <Button Content="Connect" Width="120" Height="40" Margin="5" Click="Connect_Click"/>
+                <Button Content="Disconnect" Width="120" Height="40" Margin="5" Click="Disconnect_Click"/>
+            </StackPanel>
+        </StackPanel>
     </Grid>
 </UserControl>
