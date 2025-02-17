@@ -27,9 +27,14 @@ namespace LKtunnel
                 VpnStatusText.Text = vpnConnected ? "Connected" : "Disconnected";
                 VpnStatusText.Foreground = vpnConnected ? System.Windows.Media.Brushes.Green : System.Windows.Media.Brushes.Red;
 
-                // Fetch public IP address
-                string publicIp = new WebClient().DownloadString("https://api.ipify.org").Trim();
-                IpAddressText.Text = publicIp;
+                // Fetch public IPv4 address
+                string publicIpv4 = new WebClient().DownloadString("https://api.ipify.org").Trim();
+
+                // Fetch public IPv6 address
+                string publicIpv6 = new WebClient().DownloadString("https://api6.ipify.org").Trim();
+
+                // Display both IPv4 and IPv6 addresses
+                IpAddressText.Text = $"IPv4: {publicIpv4}\nIPv6: {publicIpv6}";
             }
             catch (Exception)
             {

@@ -1,36 +1,70 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
-using Org.BouncyCastle.Utilities;
+using Microsoft.Win32;
 
 namespace LKtunnel
 {
     public partial class MainWindow : Window
     {
-        private bool isDarkMode = true;
+        private bool isDarkMode; // Track whether dark mode or light mode is active
+        private bool isUserThemeSelected = false; // Track if the user has selected a theme
 
         public MainWindow()
         {
             InitializeComponent();
+            DetectSystemTheme();
+            ApplyTheme();
         }
 
-        private void ToggleDarkMode_Click(object sender, RoutedEventArgs e)
+        // Detect the system theme (light or dark)
+        private void DetectSystemTheme()
         {
-            if (isDarkMode)
+            var registryKey = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", null);
+            if (registryKey != null)
             {
-                Application.Current.Resources.MergedDictionaries.Clear();
-                Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("Themes/LightTheme.xaml", UriKind.Relative) });
-                isDarkMode = false;
+                isDarkMode = (int)registryKey == 0; // 0 = Dark mode, 1 = Light mode
             }
             else
             {
-                Application.Current.Resources.MergedDictionaries.Clear();
-                Application.Current.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri("Themes/DarkTheme.xaml", UriKind.Relative) });
-                isDarkMode = true;
+                isDarkMode = true; // Default to dark mode if registry key is missing
             }
         }
 
-        private void LoadPage(UserControl page)
+        // Apply the theme based on current mode
+        private void ApplyTheme()
+        {
+            Application.Current.Resources.MergedDictionaries.Clear();
+            string theme = isDarkMode ? "Themes/DarkTheme.xaml" : "Themes/LightTheme.xaml";
+            var resourceDictionary = new ResourceDictionary() { Source = new Uri(theme, UriKind.Relative) };
+            Application.Current.Resources.MergedDictionaries.Add(resourceDictionary);
+        }
+
+
+        // Toggle between dark mode and light mode when the button is clicked
+        private void ToggleTheme_Click(object sender, RoutedEventArgs e)
+        {
+            if (!isUserThemeSelected)
+            {
+                // Disable system theme detection and allow user to toggle themes
+                isUserThemeSelected = true;
+            }
+
+            // Toggle dark mode or light mode
+            isDarkMode = !isDarkMode;
+            ApplyTheme();
+        }
+
+        // Close the application when the custom close button is clicked
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+    
+
+
+
+private void LoadPage(UserControl page)
         {
             MainContent.Content = page;
         }

@@ -6,7 +6,7 @@
             <TextBlock Text="VPN Status" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
             <TextBlock Name="VpnStatusText" Text="Disconnected" FontSize="18" Foreground="Red" HorizontalAlignment="Center" Margin="0,10,0,10"/>
 
-            <TextBlock Text="Current IP Address:" FontSize="16" FontWeight="Bold"/>
+            <TextBlock Text="Current IP Address (IPv4 and IPv6):" FontSize="16" FontWeight="Bold"/>
             <TextBlock Name="IpAddressText" Text="Fetching..." FontSize="16" Foreground="Blue"/>
 
             <Button Content="Refresh" Width="150" Height="40" Click="RefreshStatus_Click" Margin="10"/>

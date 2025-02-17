@@ -5,6 +5,7 @@
         <StackPanel>
             <TextBlock Text="Connection Logs" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
             <ScrollViewer Height="300">
+                <!-- LogBox follows the dark mode TextBox style and ensures scrolling -->
                 <TextBox Name="LogBox" IsReadOnly="True" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
             </ScrollViewer>
             <Button Content="Clear Logs" Width="150" Height="40" Click="ClearLogs_Click" HorizontalAlignment="Center"/>
