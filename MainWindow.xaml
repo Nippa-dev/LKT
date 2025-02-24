@@ -13,14 +13,14 @@
                 <ComboBoxItem Content="V2Ray" />
                 <ComboBoxItem Content="SSH Tunneling" />
             </ComboBox>
+            <Button x:Name="ToggleThemeButton" Content="Toggle Dark Mode" Click="ToggleTheme_Click" Height="30" Width="182"/>
 
             <!-- Other Buttons for Theme and Navigation -->
-            <Button Name="ToggleThemeButton" Content="Toggle Dark Mode" Click="ToggleTheme_Click" Margin="10"/>
-            <Button Name="DashboardButton" Content="Dashboard" Click="Dashboard_Click"/>
-            <Button Name="LogsButton" Content="Logs" Click="Logs_Click"/>
+            <Button Name="DashboardButton" Content="Dashboard" Click="Dashboard_Click" Height="41" Width="102"/>
+            <Button x:Name="LogsButton" Content="Logs" Click="Logs_Click" Height="33" Width="124"/>
         </StackPanel>
 
         <!-- Main content for each protocol -->
-        <ContentControl x:Name="MainContent" Margin="150,40,0,0"/>
+        <ContentControl x:Name="MainContent" Margin="0,138,0,0"/>
     </Grid>
 </Window>

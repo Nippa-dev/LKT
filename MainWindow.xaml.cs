@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
@@ -15,12 +16,13 @@ namespace LKtunnel
             InitializeComponent();
             DetectSystemTheme();
             ApplyTheme();
+            LoadLogsPage(); // Set Logs as default page on startup
         }
 
         // Detect system theme and apply it to the app
         private void DetectSystemTheme()
         {
-            var registryKey = Microsoft.Win32.Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", null);
+            var registryKey = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", null);
             if (registryKey != null)
             {
                 isDarkMode = (int)registryKey == 0; // 0 = Dark mode, 1 = Light mode
@@ -52,6 +54,12 @@ namespace LKtunnel
             // Toggle dark mode or light mode
             isDarkMode = !isDarkMode;
             ApplyTheme();
+        }
+
+        // Load the Logs page as the default page
+        private void LoadLogsPage()
+        {
+            MainContent.Content = new Logs();
         }
 
         // Handle protocol selection from ComboBox
@@ -95,20 +103,19 @@ namespace LKtunnel
             }
         }
 
-
-
-
-
+        // Load a page based on the button click
         private void LoadPage(UserControl page)
         {
             MainContent.Content = page;
         }
 
+        // Navigation for Dashboard
         private void Dashboard_Click(object sender, RoutedEventArgs e)
         {
             LoadPage(new Dashboard());
         }
 
+        // Optional: You could remove these if you're using ComboBox exclusively to switch pages.
         private void OpenVPN_Click(object sender, RoutedEventArgs e)
         {
             LoadPage(new OpenVPN());
@@ -138,5 +145,6 @@ namespace LKtunnel
         {
             LoadPage(new Logs());
         }
+
     }
 }

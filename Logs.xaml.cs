@@ -1,42 +1,80 @@
-﻿using System.Windows;
+﻿using System;
+using System.IO;
+using System.Threading;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace LKtunnel
 {
     public partial class Logs : UserControl
     {
+        private FileSystemWatcher logFileWatcher;
+        private string logFilePath = @"C:\path\to\your\log.txt"; // Set your log file path here
+
         public Logs()
         {
             InitializeComponent();
-            LoadLogs();
+            StartLogFileWatcher();
+            this.Unloaded += Logs_Unloaded;
         }
 
-        private void LoadLogs()
+        // Start monitoring the log file for changes
+        private void StartLogFileWatcher()
         {
-            // Read logs from a file (if applicable)
-            string logFilePath = "vpn_logs.txt";
-
-            if (System.IO.File.Exists(logFilePath))
+            if (!File.Exists(logFilePath))
             {
-                LogBox.Text = System.IO.File.ReadAllText(logFilePath);
+                MessageBox.Show("Log file not found!");
+                return;
             }
-            else
+
+            logFileWatcher = new FileSystemWatcher(Path.GetDirectoryName(logFilePath), Path.GetFileName(logFilePath))
             {
-                LogBox.Text = "No logs available.";
+                NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.Size
+            };
+
+            logFileWatcher.Changed += OnLogFileChanged;
+            logFileWatcher.EnableRaisingEvents = true;
+
+            // Start by reading the existing contents of the log file
+            ReadLogFile();
+        }
+
+        // Called when the log file is changed (new content added)
+        private void OnLogFileChanged(object sender, FileSystemEventArgs e)
+        {
+            // This is invoked in a different thread, so we need to update the UI on the main thread
+            Dispatcher.Invoke(() =>
+            {
+                // Append new content to the TextBox
+                ReadLogFile();
+            });
+        }
+
+        // Read the content of the log file and append it to the TextBox
+        private void ReadLogFile()
+        {
+            try
+            {
+                // Read the last few lines from the log file (if any new lines have been added)
+                string[] lines = File.ReadAllLines(logFilePath);
+                foreach (var line in lines)
+                {
+                    LogsTextBox.AppendText(line + Environment.NewLine);
+                }
+
+                // Scroll to the end
+                LogsTextBox.ScrollToEnd();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error reading log file: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private void ClearLogs_Click(object sender, RoutedEventArgs e)
+        // Clean up the file watcher when the Logs page is unloaded
+        private void Logs_Unloaded(object sender, RoutedEventArgs e)
         {
-            LogBox.Text = "";
-            System.IO.File.WriteAllText("vpn_logs.txt", ""); // Clear log file
-        }
-
-        public void AppendLog(string message)
-        {
-            LogBox.AppendText($"{message}\n");
-            LogBox.ScrollToEnd();
-            System.IO.File.AppendAllText("vpn_logs.txt", $"{message}\n");
+            logFileWatcher?.Dispose();
         }
     }
 }
