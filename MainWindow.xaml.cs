@@ -8,21 +8,29 @@ namespace LKtunnel
 {
     public partial class MainWindow : Window
     {
+        private bool isConnected = false; // Track connection status
+        private UserControl currentProtocolPage;
         private bool isDarkMode;
         private bool isUserThemeSelected = false;
+
+        private SSH sshControl; // Declare SSH control for access
+        private bool isVpnConnected = false; // Track VPN connection status
 
         public MainWindow()
         {
             InitializeComponent();
             DetectSystemTheme();
             ApplyTheme();
-            LoadLogsPage(); // Set Logs as default page on startup
+          
+
+            // Initialize SSH control on startup
+            sshControl = new SSH();
         }
 
         // Detect system theme and apply it to the app
         private void DetectSystemTheme()
         {
-            var registryKey = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", null);
+            var registryKey = Microsoft.Win32.Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", null);
             if (registryKey != null)
             {
                 isDarkMode = (int)registryKey == 0; // 0 = Dark mode, 1 = Light mode
@@ -42,24 +50,25 @@ namespace LKtunnel
             Application.Current.Resources.MergedDictionaries.Add(resourceDictionary);
         }
 
-        // Toggle the theme when the button is clicked
-        private void ToggleTheme_Click(object sender, RoutedEventArgs e)
+        // Connect/Disconnect button logic
+        private void ConnectDisconnectButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!isUserThemeSelected)
+            if (isVpnConnected)
             {
-                // Disable system theme detection and allow user to toggle themes
-                isUserThemeSelected = true;
+                // Disconnect VPN (call SSH disconnect)
+                sshControl.Disconnect_Click(sender, e);
+                ConnectDisconnectButton.Content = "Connect VPN";
+                LogMessage("Disconnected from SSH and VPN.");
+            }
+            else
+            {
+                // Connect VPN (call SSH connect)
+                sshControl.Connect_Click(sender, e);
+                ConnectDisconnectButton.Content = "Disconnect VPN";
+                LogMessage("Connected to SSH and VPN started.");
             }
 
-            // Toggle dark mode or light mode
-            isDarkMode = !isDarkMode;
-            ApplyTheme();
-        }
-
-        // Load the Logs page as the default page
-        private void LoadLogsPage()
-        {
-            MainContent.Content = new Logs();
+            isVpnConnected = !isVpnConnected; // Toggle VPN connection status
         }
 
         // Handle protocol selection from ComboBox
@@ -84,67 +93,27 @@ namespace LKtunnel
             switch (protocol)
             {
                 case "OpenVPN":
-                    MainContent.Content = new OpenVPN();
-                    break;
+                    break; // Implement OpenVPN loading here
                 case "WireGuard":
-                    MainContent.Content = new WireGuard();
-                    break;
+                    break; // Implement WireGuard loading here
                 case "Shadowsocks":
-                    MainContent.Content = new Shadowsocks();
-                    break;
+                    break; // Implement Shadowsocks loading here
                 case "V2Ray":
-                    MainContent.Content = new V2Ray();
-                    break;
+                    break; // Implement V2Ray loading here
                 case "SSH Tunneling":
-                    MainContent.Content = new SSH();
+                    MainContent.Content = sshControl; // Use SSH control in the protocol section
                     break;
                 default:
                     break;
             }
         }
 
-        // Load a page based on the button click
-        private void LoadPage(UserControl page)
+        // Log message to the TextBox
+        private void LogMessage(string message)
         {
-            MainContent.Content = page;
+            // Append the log message with a timestamp
+            LogsTextBox.AppendText($"[{DateTime.Now}] {message}{Environment.NewLine}");
+            LogsTextBox.ScrollToEnd(); // Ensure the latest log is visible
         }
-
-        // Navigation for Dashboard
-        private void Dashboard_Click(object sender, RoutedEventArgs e)
-        {
-            LoadPage(new Dashboard());
-        }
-
-        // Optional: You could remove these if you're using ComboBox exclusively to switch pages.
-        private void OpenVPN_Click(object sender, RoutedEventArgs e)
-        {
-            LoadPage(new OpenVPN());
-        }
-
-        private void WireGuard_Click(object sender, RoutedEventArgs e)
-        {
-            LoadPage(new WireGuard());
-        }
-
-        private void Shadowsocks_Click(object sender, RoutedEventArgs e)
-        {
-            LoadPage(new Shadowsocks());
-        }
-
-        private void V2Ray_Click(object sender, RoutedEventArgs e)
-        {
-            LoadPage(new V2Ray());
-        }
-
-        private void SSH_Click(object sender, RoutedEventArgs e)
-        {
-            LoadPage(new SSH());
-        }
-
-        private void Logs_Click(object sender, RoutedEventArgs e)
-        {
-            LoadPage(new Logs());
-        }
-
     }
 }

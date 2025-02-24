@@ -10,6 +10,9 @@ namespace LKtunnel
         private SshClient sshClient;
         private ForwardedPortDynamic portForwarding;
 
+        // Connection status
+        private bool isConnected = false;
+
         public SSH()
         {
             InitializeComponent();
@@ -24,7 +27,8 @@ namespace LKtunnel
             SSHPassword.Password = "nipun"; // Default SSH password
         }
 
-        private void Connect_Click(object sender, RoutedEventArgs e)
+        // Connect SSH and set up SOCKS proxy
+        public void Connect_Click(object sender, RoutedEventArgs e)
         {
             string host = SSHHost.Text;
             int port;
@@ -50,6 +54,7 @@ namespace LKtunnel
             try
             {
                 sshClient.Connect();
+                isConnected = true;
                 MessageBox.Show("SSH Connected!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
 
                 // Set up dynamic port forwarding (SOCKS proxy)
@@ -64,13 +69,15 @@ namespace LKtunnel
             }
         }
 
-        private void Disconnect_Click(object sender, RoutedEventArgs e)
+        // Disconnect SSH and stop proxy
+        public void Disconnect_Click(object sender, RoutedEventArgs e)
         {
-            if (sshClient != null && sshClient.IsConnected)
+            if (isConnected && sshClient != null && sshClient.IsConnected)
             {
                 // Stop port forwarding and disconnect
                 portForwarding?.Stop();
                 sshClient.Disconnect();
+                isConnected = false;
                 MessageBox.Show("SSH Disconnected and Proxy Stopped!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             else
