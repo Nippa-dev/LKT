@@ -93,20 +93,30 @@ namespace LKtunnel
             switch (protocol)
             {
                 case "OpenVPN":
-                    break; // Implement OpenVPN loading here
-                case "WireGuard":
-                    break; // Implement WireGuard loading here
-                case "Shadowsocks":
-                    break; // Implement Shadowsocks loading here
-                case "V2Ray":
-                    break; // Implement V2Ray loading here
-                case "SSH Tunneling":
-                    MainContent.Content = sshControl; // Use SSH control in the protocol section
+                    MainContent.Content = new OpenVPN(); // Load OpenVPN UserControl
                     break;
+
+                case "WireGuard":
+                    MainContent.Content = new WireGuard(); // Load WireGuard UserControl
+                    break;
+
+                case "Shadowsocks":
+                    MainContent.Content = new Shadowsocks(); // Load Shadowsocks UserControl
+                    break;
+
+                case "V2Ray":
+                    MainContent.Content = new V2Ray(); // Load V2Ray UserControl
+                    break;
+
+                case "SSH Tunneling":
+                    MainContent.Content = sshControl; // Use SSH control for SSH tunneling
+                    break;
+
                 default:
                     break;
             }
         }
+
 
         // Log message to the TextBox
         private void LogMessage(string message)
@@ -114,6 +124,48 @@ namespace LKtunnel
             // Append the log message with a timestamp
             LogsTextBox.AppendText($"[{DateTime.Now}] {message}{Environment.NewLine}");
             LogsTextBox.ScrollToEnd(); // Ensure the latest log is visible
+        }
+        // Load a page based on the button click
+        private void LoadPage(UserControl page)
+        {
+            MainContent.Content = page;
+        }
+
+        // Navigation for Dashboard
+        private void Dashboard_Click(object sender, RoutedEventArgs e)
+        {
+            LoadPage(new Dashboard());
+        }
+
+        // Optional: You could remove these if you're using ComboBox exclusively to switch pages.
+        private void OpenVPN_Click(object sender, RoutedEventArgs e)
+        {
+            LoadPage(new OpenVPN());
+        }
+
+        private void WireGuard_Click(object sender, RoutedEventArgs e)
+        {
+            LoadPage(new WireGuard());
+        }
+
+        private void Shadowsocks_Click(object sender, RoutedEventArgs e)
+        {
+            LoadPage(new Shadowsocks());
+        }
+
+        private void V2Ray_Click(object sender, RoutedEventArgs e)
+        {
+            LoadPage(new V2Ray());
+        }
+
+        private void SSH_Click(object sender, RoutedEventArgs e)
+        {
+            LoadPage(new SSH());
+        }
+
+        private void Logs_Click(object sender, RoutedEventArgs e)
+        {
+            LoadPage(new Logs());
         }
     }
 }
