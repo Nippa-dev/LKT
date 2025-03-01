@@ -4,10 +4,16 @@
         Title="LKtunnel" Height="500" Width="800">
     <Grid>
         <!-- Connect/Disconnect Button -->
-        <Button x:Name="ConnectDisconnectButton" Content="Connect VPN" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" Click="ConnectDisconnectButton_Click" Margin="10"/>
+        <Button x:Name="ConnectDisconnectButton" Content="Connect VPN" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" Click="ConnectDisconnectButton_Click" Margin="10,10,0,0"/>
+
+        <!-- Dashboard Button -->
+        <Button x:Name="DashboardButton" Content="Dashboard" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" Click="DashboardButton_Click" Margin="120,10,0,0"/>
+
+        <!-- Dark/Light Mode Toggle Switch -->
+        <ToggleButton x:Name="DarkModeToggleButton" Content="Dark Mode" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" Margin="230,10,0,0" Checked="DarkModeToggleButton_Checked" Unchecked="DarkModeToggleButton_Unchecked"/>
 
         <!-- Protocol ComboBox (Example for selection) -->
-        <ComboBox x:Name="ProtocolComboBox" HorizontalAlignment="Left" VerticalAlignment="Top" Width="150" Height="30" Margin="120,10,0,0" SelectionChanged="ProtocolComboBox_SelectionChanged">
+        <ComboBox x:Name="ProtocolComboBox" HorizontalAlignment="Left" VerticalAlignment="Top" Width="150" Height="30" Margin="340,10,0,0" SelectionChanged="ProtocolComboBox_SelectionChanged">
             <ComboBoxItem Content="OpenVPN"/>
             <ComboBoxItem Content="WireGuard"/>
             <ComboBoxItem Content="Shadowsocks"/>

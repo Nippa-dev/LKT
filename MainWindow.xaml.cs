@@ -49,7 +49,19 @@ namespace LKtunnel
             var resourceDictionary = new ResourceDictionary() { Source = new Uri(theme, UriKind.Relative) };
             Application.Current.Resources.MergedDictionaries.Add(resourceDictionary);
         }
+        // Toggle between dark mode and light mode when the button is clicked
+        private void ToggleTheme_Click(object sender, RoutedEventArgs e)
+        {
+            if (!isUserThemeSelected)
+            {
+                // Disable system theme detection and allow user to toggle themes
+                isUserThemeSelected = true;
+            }
 
+            // Toggle dark mode or light mode
+            isDarkMode = !isDarkMode;
+            ApplyTheme();
+        }
         // Connect/Disconnect button logic
         private void ConnectDisconnectButton_Click(object sender, RoutedEventArgs e)
         {
@@ -131,41 +143,36 @@ namespace LKtunnel
             MainContent.Content = page;
         }
 
+
         // Navigation for Dashboard
-        private void Dashboard_Click(object sender, RoutedEventArgs e)
+        private void DashboardButton_Click(object sender, RoutedEventArgs e)
         {
+            // Add your logic for the Dashboard button click event here
             LoadPage(new Dashboard());
         }
-
-        // Optional: You could remove these if you're using ComboBox exclusively to switch pages.
-        private void OpenVPN_Click(object sender, RoutedEventArgs e)
+        // Dark Mode Toggle Button Checked (When Dark Mode is activated)
+        // Dark Mode Toggle Button Checked (When Dark Mode is activated)
+        private void DarkModeToggleButton_Checked(object sender, RoutedEventArgs e)
         {
-            LoadPage(new OpenVPN());
+            // Switch to Dark Mode
+            isDarkMode = true;
+            ApplyTheme();  // Apply the new theme
+
+            // Change the button text to "Light Mode"
+            DarkModeToggleButton.Content = "Light Mode";
         }
 
-        private void WireGuard_Click(object sender, RoutedEventArgs e)
+        // Dark Mode Toggle Button Unchecked (When Light Mode is activated)
+        private void DarkModeToggleButton_Unchecked(object sender, RoutedEventArgs e)
         {
-            LoadPage(new WireGuard());
+            // Switch to Light Mode
+            isDarkMode = false;
+            ApplyTheme();  // Apply the new theme
+
+            // Change the button text to "Dark Mode"
+            DarkModeToggleButton.Content = "Dark Mode";
         }
 
-        private void Shadowsocks_Click(object sender, RoutedEventArgs e)
-        {
-            LoadPage(new Shadowsocks());
-        }
 
-        private void V2Ray_Click(object sender, RoutedEventArgs e)
-        {
-            LoadPage(new V2Ray());
-        }
-
-        private void SSH_Click(object sender, RoutedEventArgs e)
-        {
-            LoadPage(new SSH());
-        }
-
-        private void Logs_Click(object sender, RoutedEventArgs e)
-        {
-            LoadPage(new Logs());
-        }
     }
 }
