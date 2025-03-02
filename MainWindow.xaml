@@ -26,5 +26,6 @@
 
         <!-- Logs Section (always visible) -->
         <TextBox x:Name="LogsTextBox" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="0,0,0,10" Height="100" IsReadOnly="True" VerticalScrollBarVisibility="Auto"/>
+        
     </Grid>
 </Window>

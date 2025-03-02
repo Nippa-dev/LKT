@@ -10,10 +10,12 @@ namespace LKtunnel
     public partial class V2Ray : UserControl
     {
         private Process v2rayProcess;
+        private MainWindow mainWindow; // Reference to MainWindow
 
         public V2Ray()
         {
             InitializeComponent();
+            mainWindow = Application.Current.MainWindow as MainWindow; // Get reference to MainWindow
         }
 
         private void BrowseConfig_Click(object sender, RoutedEventArgs e)
@@ -108,12 +110,11 @@ namespace LKtunnel
 
         private void LogMessage(string message)
         {
-            // Append the log message with a timestamp
-            V2RayLogs.Dispatcher.Invoke(() =>
+            // Check if the reference to MainWindow is valid and log the message to LogsTextBox
+            if (mainWindow != null)
             {
-                V2RayLogs.AppendText($"[{DateTime.Now}] {message}\n");
-                V2RayLogs.ScrollToEnd(); // Ensure the latest log is visible
-            });
+                mainWindow.LogMessage(message); // Call LogMessage method in MainWindow
+            }
         }
 
         private void SetSystemProxy(string proxyAddress, int proxyPort)

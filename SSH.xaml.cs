@@ -13,6 +13,9 @@ namespace LKtunnel
         private ForwardedPortDynamic portForwarding;
         private bool isConnected = false;
 
+        // Add public property for MainWindow's LogsTextBox
+        public TextBox MainWindowLogsTextBox { get; set; }
+
         public SSH()
         {
             InitializeComponent();
@@ -27,13 +30,24 @@ namespace LKtunnel
             SSHPassword.Password = "nipun"; // Default SSH password
         }
 
+        // Function to log messages to MainWindow's LogsTextBox
+        private void Log(string message)
+        {
+            // Log in the MainWindow's LogsTextBox if it's provided
+            if (MainWindowLogsTextBox != null)
+            {
+                MainWindowLogsTextBox.Text += $"{DateTime.Now}: {message}\n";
+                MainWindowLogsTextBox.ScrollToEnd(); // Automatically scroll to the bottom
+            }
+        }
+
         // Connect SSH and set up SOCKS proxy
         public void Connect_Click(object sender, RoutedEventArgs e)
         {
             // Check if VPN is connected before proceeding
             if (!IsVpnConnected())
             {
-                MessageBox.Show("VPN is not connected! Please connect your VPN first.", "VPN Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Log("VPN is not connected! Please connect your VPN first.");
                 return;
             }
 
@@ -45,13 +59,13 @@ namespace LKtunnel
             // Validate inputs
             if (string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
-                MessageBox.Show("Please fill all the fields", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Log("Please fill all the fields");
                 return;
             }
 
             if (!int.TryParse(SSHPort.Text, out port))
             {
-                MessageBox.Show("Invalid port number", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Log("Invalid port number");
                 return;
             }
 
@@ -63,22 +77,21 @@ namespace LKtunnel
                 sshClient = new SshClient(host, port, username, password);
                 sshClient.Connect();
                 isConnected = true;
-                MessageBox.Show("SSH Connected!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                Log("SSH Connected!");
 
                 // Set up dynamic port forwarding (SOCKS proxy) on port 1027
                 portForwarding = new ForwardedPortDynamic("127.0.0.1", 1027);
                 sshClient.AddForwardedPort(portForwarding);
                 portForwarding.Start();
 
-                MessageBox.Show("SOCKS Proxy started on 127.0.0.1:1027", "Proxy Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                Log("SOCKS Proxy started on 127.0.0.1:1027");
 
                 // Set system proxy to 127.0.0.1:1027 automatically
                 SetSystemProxy("127.0.0.1", 1027); // Set the proxy
-
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"SSH Connection Failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Log($"SSH Connection Failed: {ex.Message}");
                 DisconnectSSH(); // Cleanup in case of failure
             }
         }
@@ -104,16 +117,16 @@ namespace LKtunnel
                     // Reset the proxy settings (optional)
                     ResetSystemProxy();
 
-                    MessageBox.Show("SSH Disconnected and Proxy Stopped!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Log("SSH Disconnected and Proxy Stopped!");
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error while disconnecting: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Log($"Error while disconnecting: {ex.Message}");
                 }
             }
             else
             {
-                MessageBox.Show("SSH is not connected!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                Log("SSH is not connected!");
             }
         }
 
@@ -149,11 +162,11 @@ namespace LKtunnel
                         key.SetValue("ProxyServer", $"socks={host}:{port}");
                     }
                 }
-                MessageBox.Show($"System Proxy Set to {host}:{port}", "Proxy Set", MessageBoxButton.OK, MessageBoxImage.Information);
+                Log($"System Proxy Set to {host}:{port}");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error setting system proxy: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Log($"Error setting system proxy: {ex.Message}");
             }
         }
 
@@ -170,11 +183,11 @@ namespace LKtunnel
                         key.SetValue("ProxyEnable", 0); // Disable the system proxy
                     }
                 }
-                MessageBox.Show("System Proxy Reset", "Proxy Reset", MessageBoxButton.OK, MessageBoxImage.Information);
+                Log("System Proxy Reset");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error resetting system proxy: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Log($"Error resetting system proxy: {ex.Message}");
             }
         }
     }

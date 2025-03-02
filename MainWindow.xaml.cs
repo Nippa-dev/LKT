@@ -21,10 +21,11 @@ namespace LKtunnel
             InitializeComponent();
             DetectSystemTheme();
             ApplyTheme();
-          
-
-            // Initialize SSH control on startup
+            /// Initialize SSH control on startup
             sshControl = new SSH();
+
+            // Set the reference of MainWindow's LogsTextBox to the SSH control
+            sshControl.MainWindowLogsTextBox = LogsTextBox;
         }
 
         // Detect system theme and apply it to the app
@@ -131,12 +132,20 @@ namespace LKtunnel
 
 
         // Log message to the TextBox
-        private void LogMessage(string message)
+        public void LogMessage(string message)
         {
-            // Append the log message with a timestamp
-            LogsTextBox.AppendText($"[{DateTime.Now}] {message}{Environment.NewLine}");
-            LogsTextBox.ScrollToEnd(); // Ensure the latest log is visible
+            if (LogsTextBox.Dispatcher.CheckAccess())
+            {
+                // Append the log message with a timestamp
+                LogsTextBox.AppendText($"[{DateTime.Now}] {message}{Environment.NewLine}");
+                LogsTextBox.ScrollToEnd(); // Ensure the latest log is visible
+            }
+            else
+            {
+                LogsTextBox.Dispatcher.Invoke(() => LogMessage(message));
+            }
         }
+
         // Load a page based on the button click
         private void LoadPage(UserControl page)
         {

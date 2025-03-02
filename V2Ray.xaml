@@ -14,10 +14,6 @@
                 <Button Name="ConnectButton" Content="Connect" Width="120" Height="40" Margin="5" Click="Connect_Click"/>
                 <Button Name="DisconnectButton" Content="Disconnect" Width="120" Height="40" Margin="5" Click="Disconnect_Click" IsEnabled="False"/>
             </StackPanel>
-
-            <!-- Output Logs -->
-            <TextBlock Text="V2Ray Output:" Margin="10,20,10,5"/>
-            <TextBox Name="V2RayLogs" Width="300" Height="150" Margin="5" IsReadOnly="True" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap"/>
         </StackPanel>
     </Grid>
 </UserControl>
