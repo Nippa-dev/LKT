@@ -1,9 +1,12 @@
 ﻿using Renci.SshNet;
 using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Net.NetworkInformation;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.Win32;  // For registry access
+using System.Windows.Threading;
+using Microsoft.Win32;
 
 namespace LKtunnel
 {
@@ -12,39 +15,39 @@ namespace LKtunnel
         private SshClient sshClient;
         private ForwardedPortDynamic portForwarding;
         private bool isConnected = false;
+        private DispatcherTimer vpnCheckTimer; // Timer to check VPN status
 
-        // Add public property for MainWindow's LogsTextBox
         public TextBox MainWindowLogsTextBox { get; set; }
 
         public SSH()
         {
             InitializeComponent();
             SetDefaultValues();
+            StartVpnMonitoring();
+
+            // Handle application closing event
+            Application.Current.Exit += OnApplicationExit;
         }
 
         private void SetDefaultValues()
         {
-            SSHHost.Text = "sg10.vpnjantit.com"; // Default server host
-            SSHPort.Text = "22"; // Default SSH port
-            SSHUsername.Text = "nipun-vpnjantit.com"; // Default SSH username
-            SSHPassword.Password = "nipun"; // Default SSH password
+            SSHHost.Text = "sg10.vpnjantit.com";
+            SSHPort.Text = "22";
+            SSHUsername.Text = "nipun-vpnjantit.com";
+            SSHPassword.Password = "nipun";
         }
 
-        // Function to log messages to MainWindow's LogsTextBox
         private void Log(string message)
         {
-            // Log in the MainWindow's LogsTextBox if it's provided
             if (MainWindowLogsTextBox != null)
             {
                 MainWindowLogsTextBox.Text += $"{DateTime.Now}: {message}\n";
-                MainWindowLogsTextBox.ScrollToEnd(); // Automatically scroll to the bottom
+                MainWindowLogsTextBox.ScrollToEnd();
             }
         }
 
-        // Connect SSH and set up SOCKS proxy
         public void Connect_Click(object sender, RoutedEventArgs e)
         {
-            // Check if VPN is connected before proceeding
             if (!IsVpnConnected())
             {
                 Log("VPN is not connected! Please connect your VPN first.");
@@ -56,7 +59,6 @@ namespace LKtunnel
             string username = SSHUsername.Text;
             string password = SSHPassword.Password;
 
-            // Validate inputs
             if (string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
                 Log("Please fill all the fields");
@@ -69,7 +71,6 @@ namespace LKtunnel
                 return;
             }
 
-            // Disconnect first if already connected
             DisconnectSSH();
 
             try
@@ -79,24 +80,21 @@ namespace LKtunnel
                 isConnected = true;
                 Log("SSH Connected!");
 
-                // Set up dynamic port forwarding (SOCKS proxy) on port 1027
                 portForwarding = new ForwardedPortDynamic("127.0.0.1", 1027);
                 sshClient.AddForwardedPort(portForwarding);
                 portForwarding.Start();
 
                 Log("SOCKS Proxy started on 127.0.0.1:1027");
 
-                // Set system proxy to 127.0.0.1:1027 automatically
-                SetSystemProxy("127.0.0.1", 1027); // Set the proxy
+                SetSystemProxy("127.0.0.1", 1027);
             }
             catch (Exception ex)
             {
                 Log($"SSH Connection Failed: {ex.Message}");
-                DisconnectSSH(); // Cleanup in case of failure
+                DisconnectSSH();
             }
         }
 
-        // Disconnect SSH and stop proxy
         public void Disconnect_Click(object sender, RoutedEventArgs e)
         {
             DisconnectSSH();
@@ -114,7 +112,6 @@ namespace LKtunnel
                     sshClient.Dispose();
                     isConnected = false;
 
-                    // Reset the proxy settings (optional)
                     ResetSystemProxy();
 
                     Log("SSH Disconnected and Proxy Stopped!");
@@ -130,29 +127,40 @@ namespace LKtunnel
             }
         }
 
-        // Function to check if VPN is connected
         private bool IsVpnConnected()
         {
             try
             {
-                using (Ping ping = new Ping())
+                ProcessStartInfo psi = new ProcessStartInfo
                 {
-                    var reply = ping.Send("8.8.8.8", 1000);
-                    return reply.Status == IPStatus.Success;
+                    FileName = "netsh",
+                    Arguments = "interface show interface",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                using (Process process = new Process { StartInfo = psi })
+                {
+                    process.Start();
+                    string output = process.StandardOutput.ReadToEnd();
+                    process.WaitForExit();
+
+                    string[] vpnKeywords = { "vpn", "wireguard", "openvpn", "pptp", "l2tp", "sstp" };
+                    return output.ToLower().Split('\n').Any(line => vpnKeywords.Any(vpn => line.Contains(vpn)));
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Log($"Error checking VPN status: {ex.Message}");
                 return false;
             }
         }
 
-        // Function to set the system proxy to 127.0.0.1:1027 for SOCKS
         private void SetSystemProxy(string host, int port)
         {
             try
             {
-                // Modify the registry to set system proxy for SOCKS
                 string proxySettingKey = @"Software\Microsoft\Windows\CurrentVersion\Internet Settings";
                 using (RegistryKey key = Registry.CurrentUser.OpenSubKey(proxySettingKey, true))
                 {
@@ -170,7 +178,6 @@ namespace LKtunnel
             }
         }
 
-        // Function to reset the system proxy (optional)
         private void ResetSystemProxy()
         {
             try
@@ -180,7 +187,7 @@ namespace LKtunnel
                 {
                     if (key != null)
                     {
-                        key.SetValue("ProxyEnable", 0); // Disable the system proxy
+                        key.SetValue("ProxyEnable", 0);
                     }
                 }
                 Log("System Proxy Reset");
@@ -189,6 +196,30 @@ namespace LKtunnel
             {
                 Log($"Error resetting system proxy: {ex.Message}");
             }
+        }
+
+        private void StartVpnMonitoring()
+        {
+            vpnCheckTimer = new DispatcherTimer();
+            vpnCheckTimer.Interval = TimeSpan.FromSeconds(5);
+            vpnCheckTimer.Tick += VpnCheckTimer_Tick;
+            vpnCheckTimer.Start();
+        }
+
+        private void VpnCheckTimer_Tick(object sender, EventArgs e)
+        {
+            if (!IsVpnConnected())
+            {
+                ResetSystemProxy();
+                Log("VPN Disconnected! Proxy Reset.");
+            }
+        }
+
+        // ✅ NEW: Handle Application Closing Event
+        private void OnApplicationExit(object sender, ExitEventArgs e)
+        {
+            Log("Application is closing. Resetting proxy...");
+            ResetSystemProxy(); // Reset proxy when app is closed
         }
     }
 }

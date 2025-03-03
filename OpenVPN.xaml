@@ -1,14 +1,13 @@
 ﻿<UserControl x:Class="LKtunnel.OpenVPN"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid>
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
-            <TextBlock Text="OpenVPN Configuration" FontSize="20" HorizontalAlignment="Center" Margin="0,10,0,10"/>
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Height="400" Width="500">
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
-                <Button Content="Connect" Width="120" Height="40" Margin="5" Click="Connect_Click"/>
-                <Button Content="Disconnect" Width="120" Height="40" Margin="5" Click="Disconnect_Click"/>
-            </StackPanel>
-        </StackPanel>
-    </Grid>
+    <StackPanel Margin="10">
+        <Label Content="VPN Status:" FontWeight="Bold"/>
+        <Label x:Name="VpnStatusLabel" Content="Not Connected" Foreground="Red"/>
+
+        <Button Content="Connect" Click="Connect_Click" Width="100" Margin="5"/>
+        <Button Content="Disconnect" Click="Disconnect_Click" Width="100" Margin="5"/>
+    </StackPanel>
 </UserControl>

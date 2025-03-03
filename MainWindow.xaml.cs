@@ -182,6 +182,9 @@ namespace LKtunnel
             DarkModeToggleButton.Content = "Dark Mode";
         }
 
+        private void LogsTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
 
+        }
     }
 }
