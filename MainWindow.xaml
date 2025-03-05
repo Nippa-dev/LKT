@@ -3,17 +3,26 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="LKtunnel" Height="500" Width="800">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Row for buttons -->
+            <RowDefinition Height="*"/>
+            <!-- Row for the main content -->
+            <RowDefinition Height="Auto"/>
+            <!-- Row for logs -->
+        </Grid.RowDefinitions>
+
         <!-- Connect/Disconnect Button -->
-        <Button x:Name="ConnectDisconnectButton" Content="Connect VPN" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" Click="ConnectDisconnectButton_Click" Margin="10,10,0,0"/>
+        <Button x:Name="ConnectDisconnectButton" Content="Connect VPN" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" Click="ConnectDisconnectButton_Click" Margin="10,10,0,0" Grid.Row="0"/>
 
         <!-- Dashboard Button -->
-        <Button x:Name="DashboardButton" Content="Dashboard" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" Click="DashboardButton_Click" Margin="120,10,0,0"/>
+        <Button x:Name="DashboardButton" Content="Dashboard" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" Click="DashboardButton_Click" Margin="120,10,0,0" Grid.Row="0"/>
 
         <!-- Dark/Light Mode Toggle Switch -->
-        <ToggleButton x:Name="DarkModeToggleButton" Content="Dark Mode" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" Margin="230,10,0,0" Checked="DarkModeToggleButton_Checked" Unchecked="DarkModeToggleButton_Unchecked"/>
+        <ToggleButton x:Name="DarkModeToggleButton" Content="Dark Mode" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" Margin="230,10,0,0" Checked="DarkModeToggleButton_Checked" Unchecked="DarkModeToggleButton_Unchecked" Grid.Row="0"/>
 
         <!-- Protocol ComboBox (Example for selection) -->
-        <ComboBox x:Name="ProtocolComboBox" HorizontalAlignment="Left" VerticalAlignment="Top" Width="150" Height="30" Margin="340,10,0,0" SelectionChanged="ProtocolComboBox_SelectionChanged">
+        <ComboBox x:Name="ProtocolComboBox" HorizontalAlignment="Left" VerticalAlignment="Top" Width="150" Height="30" Margin="340,10,0,0" SelectionChanged="ProtocolComboBox_SelectionChanged" Grid.Row="0">
             <ComboBoxItem Content="OpenVPN"/>
             <ComboBoxItem Content="WireGuard"/>
             <ComboBoxItem Content="Shadowsocks"/>
@@ -22,10 +31,10 @@
         </ComboBox>
 
         <!-- Main Content Area -->
-        <ContentControl x:Name="MainContent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,50,0,0"/>
+        <ContentControl x:Name="MainContent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,10,0,0" Grid.Row="1"/>
 
         <!-- Logs Section (always visible) -->
-        <TextBox x:Name="LogsTextBox" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="0,0,0,10" Height="100" IsReadOnly="True" VerticalScrollBarVisibility="Auto" TextChanged="LogsTextBox_TextChanged"/>
-        
+        <TextBox x:Name="LogsTextBox" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="0,0,0,10" Height="100" IsReadOnly="True" VerticalScrollBarVisibility="Auto" TextChanged="LogsTextBox_TextChanged" Grid.Row="2"/>
+
     </Grid>
 </Window>

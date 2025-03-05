@@ -12,10 +12,15 @@ namespace LKtunnel
         private Process v2rayProcess;
         private MainWindow mainWindow; // Reference to MainWindow
 
+        public TextBox MainWindowLogsTextBox { get; set; }
+
         public V2Ray()
         {
             InitializeComponent();
             mainWindow = Application.Current.MainWindow as MainWindow; // Get reference to MainWindow
+
+            // Set the default config file path to the specified default file
+            V2RayConfigPath.Text = @"C:\Users\klnip\Downloads\aaaa.json";
         }
 
         private void BrowseConfig_Click(object sender, RoutedEventArgs e)
@@ -28,11 +33,11 @@ namespace LKtunnel
 
             if (openFileDialog.ShowDialog() == true)
             {
-                V2RayConfigPath.Text = openFileDialog.FileName;
+                V2RayConfigPath.Text = openFileDialog.FileName; // Update the path to the selected file
             }
         }
 
-        private void Connect_Click(object sender, RoutedEventArgs e)
+        public void Connect_Click(object sender, RoutedEventArgs e)
         {
             string v2rayPath = @"C:\Users\klnip\source\repos\LKT\bin\V2Ray\v2ray.exe"; // Update to your correct path
             string configPath = V2RayConfigPath.Text;
@@ -91,7 +96,7 @@ namespace LKtunnel
             }
         }
 
-        private void Disconnect_Click(object sender, RoutedEventArgs e)
+        public void Disconnect_Click(object sender, RoutedEventArgs e)
         {
             if (v2rayProcess != null && !v2rayProcess.HasExited)
             {
