@@ -1,12 +1,12 @@
 ﻿using Renci.SshNet;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
-using System.Net.NetworkInformation;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Threading;
 using Microsoft.Win32;
+using Newtonsoft.Json;
 
 namespace LKtunnel
 {
@@ -15,35 +15,16 @@ namespace LKtunnel
         private SshClient sshClient;
         private ForwardedPortDynamic portForwarding;
         private bool isConnected = false;
-        private DispatcherTimer vpnCheckTimer; // Timer to check VPN status
-
         public TextBox MainWindowLogsTextBox { get; set; }
 
         public SSH()
         {
             InitializeComponent();
-            SetDefaultValues();
-            StartVpnMonitoring();
-
-            // Handle application closing event
-            Application.Current.Exit += OnApplicationExit;
-        }
-
-        private void SetDefaultValues()
-        {
-            SSHHost.Text = "sg10.vpnjantit.com";
-            SSHPort.Text = "22";
-            SSHUsername.Text = "nipun-vpnjantit.com";
-            SSHPassword.Password = "nipun";
         }
 
         private void Log(string message)
         {
-            if (MainWindowLogsTextBox != null)
-            {
-                MainWindowLogsTextBox.Text += $"{DateTime.Now}: {message}\n";
-                MainWindowLogsTextBox.ScrollToEnd();
-            }
+            Console.WriteLine($"{DateTime.Now}: {message}");
         }
 
         public void Connect_Click(object sender, RoutedEventArgs e)
@@ -61,13 +42,13 @@ namespace LKtunnel
 
             if (string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
-                Log("Please fill all the fields");
+                Log("Please fill all the fields.");
                 return;
             }
 
             if (!int.TryParse(SSHPort.Text, out port))
             {
-                Log("Invalid port number");
+                Log("Invalid port number.");
                 return;
             }
 
@@ -85,8 +66,6 @@ namespace LKtunnel
                 portForwarding.Start();
 
                 Log("SOCKS Proxy started on 127.0.0.1:1027");
-
-                SetSystemProxy("127.0.0.1", 1027);
             }
             catch (Exception ex)
             {
@@ -111,10 +90,7 @@ namespace LKtunnel
                     sshClient.Disconnect();
                     sshClient.Dispose();
                     isConnected = false;
-
-                    ResetSystemProxy();
-
-                    Log("SSH Disconnected and Proxy Stopped!");
+                    Log("SSH Disconnected!");
                 }
                 catch (Exception ex)
                 {
@@ -157,69 +133,82 @@ namespace LKtunnel
             }
         }
 
-        private void SetSystemProxy(string host, int port)
+        private class SshConfig
         {
-            try
+            public string Host { get; set; }
+            public int Port { get; set; }
+            public string Username { get; set; }
+            public string Password { get; set; }
+        }
+
+        private void SaveConfig()
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog
             {
-                string proxySettingKey = @"Software\Microsoft\Windows\CurrentVersion\Internet Settings";
-                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(proxySettingKey, true))
+                Filter = "JSON Files (*.json)|*.json",
+                Title = "Save SSH Configuration"
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                try
                 {
-                    if (key != null)
+                    SshConfig config = new SshConfig
                     {
-                        key.SetValue("ProxyEnable", 1);
-                        key.SetValue("ProxyServer", $"socks={host}:{port}");
-                    }
-                }
-                Log($"System Proxy Set to {host}:{port}");
-            }
-            catch (Exception ex)
-            {
-                Log($"Error setting system proxy: {ex.Message}");
-            }
-        }
+                        Host = SSHHost.Text,
+                        Port = int.TryParse(SSHPort.Text, out int port) ? port : 22,
+                        Username = SSHUsername.Text,
+                        Password = SSHPassword.Password
+                    };
 
-        private void ResetSystemProxy()
-        {
-            try
-            {
-                string proxySettingKey = @"Software\Microsoft\Windows\CurrentVersion\Internet Settings";
-                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(proxySettingKey, true))
+                    string json = JsonConvert.SerializeObject(config, Formatting.Indented);
+                    File.WriteAllText(saveFileDialog.FileName, json);
+                    Log($"Configuration saved successfully to {saveFileDialog.FileName}");
+                }
+                catch (Exception ex)
                 {
-                    if (key != null)
-                    {
-                        key.SetValue("ProxyEnable", 0);
-                    }
+                    Log($"Error saving configuration: {ex.Message}");
                 }
-                Log("System Proxy Reset");
             }
-            catch (Exception ex)
+        }
+
+        private void LoadConfig()
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
             {
-                Log($"Error resetting system proxy: {ex.Message}");
-            }
-        }
+                Filter = "JSON Files (*.json)|*.json",
+                Title = "Load SSH Configuration"
+            };
 
-        private void StartVpnMonitoring()
-        {
-            vpnCheckTimer = new DispatcherTimer();
-            vpnCheckTimer.Interval = TimeSpan.FromSeconds(5);
-            vpnCheckTimer.Tick += VpnCheckTimer_Tick;
-            vpnCheckTimer.Start();
-        }
-
-        private void VpnCheckTimer_Tick(object sender, EventArgs e)
-        {
-            if (!IsVpnConnected())
+            if (openFileDialog.ShowDialog() == true)
             {
-                ResetSystemProxy();
-                Log("VPN Disconnected! Proxy Reset.");
+                try
+                {
+                    string json = File.ReadAllText(openFileDialog.FileName);
+                    SshConfig config = JsonConvert.DeserializeObject<SshConfig>(json);
+
+                    SSHHost.Text = config.Host;
+                    SSHPort.Text = config.Port.ToString();
+                    SSHUsername.Text = config.Username;
+                    SSHPassword.Password = config.Password;
+
+                    Log($"Configuration loaded successfully from {openFileDialog.FileName}");
+                }
+                catch (Exception ex)
+                {
+                    Log($"Error loading configuration: {ex.Message}");
+                }
             }
         }
 
-        // ✅ NEW: Handle Application Closing Event
-        private void OnApplicationExit(object sender, ExitEventArgs e)
+        private void SaveConfig_Click(object sender, RoutedEventArgs e)
         {
-            Log("Application is closing. Resetting proxy...");
-            ResetSystemProxy(); // Reset proxy when app is closed
+            SaveConfig();
+        }
+
+        private void LoadConfig_Click(object sender, RoutedEventArgs e)
+        {
+            LoadConfig();
         }
     }
 }
