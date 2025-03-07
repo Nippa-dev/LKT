@@ -8,7 +8,11 @@
             <TextBlock Text="Config Path:"/>
             <TextBox Name="V2RayConfigPath" Width="300" Margin="5"/>
 
-            <Button Content="Browse" Width="120" Height="30" Click="BrowseConfig_Click" Margin="5"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="5">
+                <Button Content="Browse" Width="100" Height="30" Click="BrowseConfig_Click"/>
+                <Button Content="Save Config" Width="100" Height="30" Click="SaveConfig_Click"/>
+                <Button Content="Load Config" Width="100" Height="30" Click="LoadConfig_Click"/>
+            </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
                 <Button Name="ConnectButton" Content="Connect" Width="120" Height="40" Margin="5" Click="Connect_Click"/>

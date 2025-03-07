@@ -11,7 +11,6 @@ namespace LKtunnel
     {
         private Process v2rayProcess;
         private MainWindow mainWindow; // Reference to MainWindow
-
         public TextBox MainWindowLogsTextBox { get; set; }
 
         public V2Ray()
@@ -19,8 +18,6 @@ namespace LKtunnel
             InitializeComponent();
             mainWindow = Application.Current.MainWindow as MainWindow; // Get reference to MainWindow
 
-            // Set the default config file path to the specified default file
-            V2RayConfigPath.Text = @"C:\Users\klnip\Downloads\aaaa.json";
         }
 
         private void BrowseConfig_Click(object sender, RoutedEventArgs e)
@@ -33,13 +30,56 @@ namespace LKtunnel
 
             if (openFileDialog.ShowDialog() == true)
             {
-                V2RayConfigPath.Text = openFileDialog.FileName; // Update the path to the selected file
+                V2RayConfigPath.Text = openFileDialog.FileName; // Update path
+            }
+        }
+
+        private void SaveConfig_Click(object sender, RoutedEventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                Filter = "Text Files (*.txt)|*.txt",
+                Title = "Save V2Ray Config Path"
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    File.WriteAllText(saveFileDialog.FileName, V2RayConfigPath.Text);
+                    MessageBox.Show("Configuration path saved successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to save config: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void LoadConfig_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Filter = "Text Files (*.txt)|*.txt",
+                Title = "Load V2Ray Config Path"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    V2RayConfigPath.Text = File.ReadAllText(openFileDialog.FileName);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to load config: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
         public void Connect_Click(object sender, RoutedEventArgs e)
         {
-            string v2rayPath = @"C:\Users\klnip\source\repos\LKT\bin\V2Ray\v2ray.exe"; // Update to your correct path
+            string v2rayPath = @"C:\Users\klnip\source\repos\LKT\bin\V2Ray\v2ray.exe"; // Update path
             string configPath = V2RayConfigPath.Text;
 
             if (!File.Exists(v2rayPath) || !File.Exists(configPath))
@@ -55,7 +95,7 @@ namespace LKtunnel
                     StartInfo = new ProcessStartInfo
                     {
                         FileName = v2rayPath,
-                        Arguments = $"run -config \"{configPath}\"", // Correct command
+                        Arguments = $"run -config \"{configPath}\"",
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
                         UseShellExecute = false,
@@ -63,32 +103,24 @@ namespace LKtunnel
                     }
                 };
 
-                // Capture V2Ray output
                 v2rayProcess.OutputDataReceived += (outputSender, args) =>
                 {
-                    if (args.Data != null)
-                    {
-                        LogMessage(args.Data); // Log output with timestamp
-                    }
+                    if (args.Data != null) LogMessage(args.Data);
                 };
                 v2rayProcess.ErrorDataReceived += (errorSender, args) =>
                 {
-                    if (args.Data != null)
-                    {
-                        LogMessage("Error: " + args.Data); // Log errors with timestamp
-                    }
+                    if (args.Data != null) LogMessage("Error: " + args.Data);
                 };
 
                 v2rayProcess.Start();
                 v2rayProcess.BeginOutputReadLine();
                 v2rayProcess.BeginErrorReadLine();
 
-                ConnectButton.IsEnabled = false; // Disable Connect button
-                DisconnectButton.IsEnabled = true; // Enable Disconnect button
+                ConnectButton.IsEnabled = false;
+                DisconnectButton.IsEnabled = true;
                 LogMessage("V2Ray Connected!");
 
-                // Set system proxy to route traffic through V2Ray's local SOCKS proxy (127.0.0.1:10808)
-                SetSystemProxy("127.0.0.1", 10808); // Set the proxy port to 10808
+                SetSystemProxy("127.0.0.1", 10808);
             }
             catch (Exception ex)
             {
@@ -103,22 +135,19 @@ namespace LKtunnel
                 v2rayProcess.Kill();
                 v2rayProcess = null;
 
-                ConnectButton.IsEnabled = true; // Enable Connect button
-                DisconnectButton.IsEnabled = false; // Disable Disconnect button
-
+                ConnectButton.IsEnabled = true;
+                DisconnectButton.IsEnabled = false;
                 LogMessage("V2Ray Disconnected!");
 
-                // Reset system proxy settings when disconnecting
                 ResetSystemProxy();
             }
         }
 
         private void LogMessage(string message)
         {
-            // Check if the reference to MainWindow is valid and log the message to LogsTextBox
             if (mainWindow != null)
             {
-                mainWindow.LogMessage(message); // Call LogMessage method in MainWindow
+                mainWindow.LogMessage(message);
             }
         }
 
@@ -126,14 +155,11 @@ namespace LKtunnel
         {
             try
             {
-                // Open registry key for proxy settings
                 RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Internet Settings", true);
-
                 if (key != null)
                 {
-                    key.SetValue("ProxyEnable", 1); // Enable proxy
-                    key.SetValue("ProxyServer", $"socks={proxyAddress}:{proxyPort}"); // Set proxy address and port
-
+                    key.SetValue("ProxyEnable", 1);
+                    key.SetValue("ProxyServer", $"socks={proxyAddress}:{proxyPort}");
                     LogMessage("System Proxy Set to V2Ray: " + proxyAddress + ":" + proxyPort);
                 }
             }
@@ -147,14 +173,11 @@ namespace LKtunnel
         {
             try
             {
-                // Open registry key for proxy settings
                 RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Internet Settings", true);
-
                 if (key != null)
                 {
-                    key.SetValue("ProxyEnable", 0); // Disable proxy
-                    key.SetValue("ProxyServer", ""); // Clear proxy server setting
-
+                    key.SetValue("ProxyEnable", 0);
+                    key.SetValue("ProxyServer", "");
                     LogMessage("System Proxy Reset.");
                 }
             }
