@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Microsoft.Win32;
 
 namespace LKtunnel
 {
@@ -15,6 +16,7 @@ namespace LKtunnel
         private Thread logThread;
         private CancellationTokenSource statusCheckToken;
         private MainWindow mainWindow; // Reference to MainWindow
+        private string configPath = @"C:\Users\klnip\Downloads\nipun-sg2.vpnjantit-udp-2500.ovpn"; // Default config path
 
         public OpenVPN()
         {
@@ -30,9 +32,6 @@ namespace LKtunnel
             // Assuming OpenVPN is installed in "C:\Program Files\OpenVPN\bin\openvpn.exe" or a similar path, 
             // but you can make this path dynamic based on installation or user input
             string openvpnPath = Path.Combine(@"OpenVPN\bin", "openvpn.exe");
-
-            // Assume the configuration file is stored in the same directory as the app (or elsewhere)
-            string configPath = @"C:\Users\klnip\Downloads\nipun-sg2.vpnjantit-udp-2500.ovpn";
 
             // Check if the OpenVPN executable exists
             if (!File.Exists(openvpnPath))
@@ -85,7 +84,6 @@ namespace LKtunnel
                 MessageBox.Show($"Failed to start OpenVPN: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
 
         private void Disconnect_Click(object sender, RoutedEventArgs e)
         {
@@ -187,6 +185,23 @@ namespace LKtunnel
             {
                 mainWindow?.LogMessage(message); // Forward logs to MainWindow
             });
+        }
+
+        private void BrowseConfigButton_Click(object sender, RoutedEventArgs e)
+        {
+            var openFileDialog = new OpenFileDialog
+            {
+                Filter = "OpenVPN Configuration Files (*.ovpn)|*.ovpn|All Files (*.*)|*.*",
+                Title = "Select OpenVPN Configuration File"
+            };
+
+            bool? result = openFileDialog.ShowDialog();
+
+            if (result == true)
+            {
+                configPath = openFileDialog.FileName;
+                MessageBox.Show($"Selected Configuration File: {configPath}", "File Selected", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
     }
 }

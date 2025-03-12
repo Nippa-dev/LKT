@@ -4,10 +4,16 @@
     Height="400" Width="500">
 
     <StackPanel Margin="10">
+        <!-- VPN Status Labels -->
         <Label Content="VPN Status:" FontWeight="Bold"/>
         <Label x:Name="VpnStatusLabel" Content="Not Connected" Foreground="Red"/>
 
+        <!-- Connect and Disconnect Buttons -->
         <Button Content="Connect" Click="Connect_Click" Width="100" Margin="5"/>
         <Button Content="Disconnect" Click="Disconnect_Click" Width="100" Margin="5"/>
+
+        <!-- Browse Config Button -->
+        <Button Content="Browse Config File" Name="BrowseConfigButton" Click="BrowseConfigButton_Click" Width="150" Height="30" Margin="10"/>
     </StackPanel>
+
 </UserControl>
