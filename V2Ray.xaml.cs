@@ -79,7 +79,10 @@ namespace LKtunnel
 
         public void Connect_Click(object sender, RoutedEventArgs e)
         {
-            string v2rayPath = @"C:\Users\klnip\source\repos\LKT\bin\V2Ray\v2ray.exe"; // Update path
+            // Get the path of the V2Ray executable relative to the app's base directory
+            string appDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string v2rayPath = Path.Combine(appDirectory,@"V2Ray\v2ray.exe");
+
             string configPath = V2RayConfigPath.Text;
 
             if (!File.Exists(v2rayPath) || !File.Exists(configPath))
@@ -127,6 +130,7 @@ namespace LKtunnel
                 MessageBox.Show($"Failed to start V2Ray: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
 
         public void Disconnect_Click(object sender, RoutedEventArgs e)
         {

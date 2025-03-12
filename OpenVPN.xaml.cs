@@ -24,15 +24,24 @@ namespace LKtunnel
 
         private void Connect_Click(object sender, RoutedEventArgs e)
         {
-            string openvpnPath = @"C:\Program Files\OpenVPN\bin\openvpn.exe";
+            // Get the application's base directory where the app is located
+            string appDirectory = AppDomain.CurrentDomain.BaseDirectory;
+
+            // Assuming OpenVPN is installed in "C:\Program Files\OpenVPN\bin\openvpn.exe" or a similar path, 
+            // but you can make this path dynamic based on installation or user input
+            string openvpnPath = Path.Combine(@"OpenVPN\bin", "openvpn.exe");
+
+            // Assume the configuration file is stored in the same directory as the app (or elsewhere)
             string configPath = @"C:\Users\klnip\Downloads\nipun-sg2.vpnjantit-udp-2500.ovpn";
 
+            // Check if the OpenVPN executable exists
             if (!File.Exists(openvpnPath))
             {
                 MessageBox.Show("OpenVPN executable not found!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
+            // Check if the configuration file exists
             if (!File.Exists(configPath))
             {
                 MessageBox.Show("OpenVPN configuration file not found!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -76,6 +85,7 @@ namespace LKtunnel
                 MessageBox.Show($"Failed to start OpenVPN: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
 
         private void Disconnect_Click(object sender, RoutedEventArgs e)
         {
