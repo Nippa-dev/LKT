@@ -66,7 +66,22 @@ namespace LKtunnel
                     }
                 };
 
-                openvpnProcess.Start();
+                try
+                {
+                    openvpnProcess.Start();
+                }
+                catch (System.ComponentModel.Win32Exception ex)
+                {
+                    if (ex.NativeErrorCode == 1223) // ERROR_CANCELLED - User canceled the UAC prompt
+                    {
+                        MessageBox.Show("Administrator permissions are required to run OpenVPN. Please run as Administrator.", "Permission Denied", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                    else
+                    {
+                        MessageBox.Show($"Failed to start OpenVPN: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                    return;
+                }
 
                 // Start reading OpenVPN logs
                 logThread = new Thread(() => ReadProcessOutput(openvpnProcess));

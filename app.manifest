@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
+	<!-- Assembly Identity: Specifies the application version and name -->
+	<assemblyIdentity version="1.0.0.0" name="LKT.app"/>
+
+	<!-- Requested privileges for the application (to request Administrator privileges) -->
+	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
+		<security>
+			<requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
+				<!-- Request Administrator privileges on application startup -->
+				<requestedExecutionLevel level="requireAdministrator" uiAccess="false" />
+			</requestedPrivileges>
+		</security>
+	</trustInfo>
+
+	<!-- Compatibility settings for supported Windows OS versions -->
+	<compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+		<application>
+			<!-- Indicates that this app is compatible with Windows 10 -->
+			<supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}" />
+		</application>
+	</compatibility>
+
+	<!-- DPI Awareness and Long Path Awareness settings -->
+	<application xmlns="urn:schemas-microsoft-com:asm.v3">
+		<windowsSettings>
+			<!-- WPF applications are DPI-aware by default, but you can explicitly set this if needed -->
+			<dpiAware xmlns="http://schemas.microsoft.com/SMI/2005/WindowsSettings">true</dpiAware>
+
+			<!-- Enable long path support to handle files that exceed the 260 character limit -->
+			<longPathAware xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">true</longPathAware>
+		</windowsSettings>
+	</application>
+
+	<!-- Enable Windows common controls theme for compatibility with Windows XP and later -->
+	<!-- Uncomment this section if you need to support older versions of Windows -->
+	<!--
+  <dependency>
+    <dependentAssembly>
+      <assemblyIdentity
+          type="win32"
+          name="Microsoft.Windows.Common-Controls"
+          version="6.0.0.0"
+          processorArchitecture="*"
+          publicKeyToken="6595b64144ccf1df"
+          language="*"
+        />
+    </dependentAssembly>
+  </dependency>
+  -->
+</assembly>

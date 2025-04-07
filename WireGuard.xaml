@@ -9,6 +9,14 @@
                 <Button Content="Connect" Width="120" Height="40" Margin="5" Click="Connect_Click"/>
                 <Button Content="Disconnect" Width="120" Height="40" Margin="5" Click="Disconnect_Click"/>
             </StackPanel>
+
+            <!-- Browse Config Button to allow users to select a configuration file -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
+                <Button x:Name="BrowseConfigButton" Content="Browse Config" Width="120" Height="40" Margin="5" Click="BrowseConfigButton_Click"/>
+            </StackPanel>
+
+            <!-- Label to show VPN status -->
+            <Label x:Name="VpnStatusLabel" FontSize="16" HorizontalAlignment="Center" Margin="10"/>
         </StackPanel>
     </Grid>
 </UserControl>
