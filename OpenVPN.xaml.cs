@@ -10,37 +10,52 @@ using Microsoft.Win32;
 
 namespace LKtunnel
 {
-    public partial class OpenVPN : UserControl
+    public partial class OpenVPN : UserControl, IConfigurableProtocol
     {
         private Process openvpnProcess;
         private Thread logThread;
         private CancellationTokenSource statusCheckToken;
         private MainWindow mainWindow; // Reference to MainWindow
-        private string configPath = @"C:\Users\klnip\Downloads\nipun-sg2.vpnjantit-udp-2500.ovpn"; // Default config path
+        private string configPath = ""; // Holds path to the .ovpn file
 
         public OpenVPN()
         {
             InitializeComponent();
-            mainWindow = Application.Current.MainWindow as MainWindow; // Get reference to MainWindow
+            mainWindow = Application.Current.MainWindow as MainWindow;
+        }
+
+        // Apply imported config
+        public void ApplyConfig(ProtocolConfig config)
+        {
+            configPath = config.OpenVPNConfigPath;
+            if (OpenVPNConfigPath != null)
+                OpenVPNConfigPath.Text = config.OpenVPNConfigPath;
+        }
+
+        // Export config from current state
+        public ProtocolConfig ExportConfig()
+        {
+            return new ProtocolConfig
+            {
+                Protocol = "OpenVPN",
+                OpenVPNConfigPath = OpenVPNConfigPath?.Text ?? configPath
+            };
         }
 
         private void Connect_Click(object sender, RoutedEventArgs e)
         {
-            // Get the application's base directory where the app is located
             string appDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string openvpnPath = Path.Combine("OpenVPN\\bin", "openvpn.exe");
 
-            // Assuming OpenVPN is installed in "C:\Program Files\OpenVPN\bin\openvpn.exe" or a similar path, 
-            // but you can make this path dynamic based on installation or user input
-            string openvpnPath = Path.Combine(@"OpenVPN\bin", "openvpn.exe");
-
-            // Check if the OpenVPN executable exists
+            // Validate files
             if (!File.Exists(openvpnPath))
             {
                 MessageBox.Show("OpenVPN executable not found!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            // Check if the configuration file exists
+            configPath = OpenVPNConfigPath.Text;
+
             if (!File.Exists(configPath))
             {
                 MessageBox.Show("OpenVPN configuration file not found!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -62,7 +77,7 @@ namespace LKtunnel
                         RedirectStandardError = true,
                         UseShellExecute = false,
                         CreateNoWindow = true,
-                        Verb = "runas" // Run OpenVPN as Administrator
+                        Verb = "runas"
                     }
                 };
 
@@ -72,23 +87,20 @@ namespace LKtunnel
                 }
                 catch (System.ComponentModel.Win32Exception ex)
                 {
-                    if (ex.NativeErrorCode == 1223) // ERROR_CANCELLED - User canceled the UAC prompt
+                    if (ex.NativeErrorCode == 1223)
                     {
-                        MessageBox.Show("Administrator permissions are required to run OpenVPN. Please run as Administrator.", "Permission Denied", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show("Administrator permissions required to run OpenVPN.", "Permission Denied", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                     else
                     {
-                        MessageBox.Show($"Failed to start OpenVPN: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show($"OpenVPN failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                     return;
                 }
 
-                // Start reading OpenVPN logs
-                logThread = new Thread(() => ReadProcessOutput(openvpnProcess));
-                logThread.IsBackground = true;
+                logThread = new Thread(() => ReadProcessOutput(openvpnProcess)) { IsBackground = true };
                 logThread.Start();
 
-                // Start checking VPN status
                 statusCheckToken = new CancellationTokenSource();
                 Task.Run(() => CheckVpnStatusPeriodically(statusCheckToken.Token));
 
@@ -113,7 +125,7 @@ namespace LKtunnel
                     LogMessage("VPN Disconnected.");
                     UpdateVpnStatus("Disconnected", Brushes.Red);
 
-                    statusCheckToken?.Cancel(); // Stop VPN status checking
+                    statusCheckToken?.Cancel();
 
                     MessageBox.Show("OpenVPN Disconnected!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
@@ -145,6 +157,7 @@ namespace LKtunnel
                     LogMessage("ERROR: " + errorLine);
                 }
             }
+
         }
 
         private async Task CheckVpnStatusPeriodically(CancellationToken token)
@@ -154,17 +167,11 @@ namespace LKtunnel
                 bool isConnected = CheckVpnStatus();
                 Dispatcher.Invoke(() =>
                 {
-                    if (isConnected)
-                    {
-                        UpdateVpnStatus("Connected", Brushes.Green);
-                    }
-                    else
-                    {
-                        UpdateVpnStatus("Disconnected", Brushes.Red);
-                    }
+                    UpdateVpnStatus(isConnected ? "Connected" : "Disconnected",
+                                    isConnected ? Brushes.Green : Brushes.Red);
                 });
 
-                await Task.Delay(5000); // Check VPN status every 5 seconds
+                await Task.Delay(5000);
             }
         }
 
@@ -175,15 +182,10 @@ namespace LKtunnel
                 foreach (var process in Process.GetProcessesByName("openvpn"))
                 {
                     if (!process.HasExited)
-                    {
-                        return true; // OpenVPN process is running
-                    }
+                        return true;
                 }
             }
-            catch (Exception)
-            {
-                return false;
-            }
+            catch { }
 
             return false;
         }
@@ -198,7 +200,7 @@ namespace LKtunnel
         {
             Dispatcher.Invoke(() =>
             {
-                mainWindow?.LogMessage(message); // Forward logs to MainWindow
+                mainWindow?.LogMessage(message);
             });
         }
 
@@ -210,12 +212,11 @@ namespace LKtunnel
                 Title = "Select OpenVPN Configuration File"
             };
 
-            bool? result = openFileDialog.ShowDialog();
-
-            if (result == true)
+            if (openFileDialog.ShowDialog() == true)
             {
                 configPath = openFileDialog.FileName;
-                MessageBox.Show($"Selected Configuration File: {configPath}", "File Selected", MessageBoxButton.OK, MessageBoxImage.Information);
+                OpenVPNConfigPath.Text = configPath;
+                MessageBox.Show($"Selected Configuration File:\n{configPath}", "File Selected", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
     }

@@ -14,6 +14,11 @@
 
         <!-- Browse Config Button -->
         <Button Content="Browse Config File" Name="BrowseConfigButton" Click="BrowseConfigButton_Click" Width="150" Height="30" Margin="10"/>
+
+        <!-- Config Path TextBox -->
+        <TextBox x:Name="OpenVPNConfigPath" Width="300" Margin="10" IsReadOnly="True"/>
+
+       
     </StackPanel>
 
 </UserControl>

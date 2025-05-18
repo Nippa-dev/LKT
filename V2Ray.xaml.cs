@@ -4,20 +4,36 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
+using Microsoft.Win32; // Required for registry editing
 
 namespace LKtunnel
 {
-    public partial class V2Ray : UserControl
+    public partial class V2Ray : UserControl, IConfigurableProtocol
     {
         private Process v2rayProcess;
-        private MainWindow mainWindow; // Reference to MainWindow
+        private MainWindow mainWindow;
         public TextBox MainWindowLogsTextBox { get; set; }
 
         public V2Ray()
         {
             InitializeComponent();
-            mainWindow = Application.Current.MainWindow as MainWindow; // Get reference to MainWindow
+            mainWindow = Application.Current.MainWindow as MainWindow;
+        }
 
+        // Import config (used when loading a .lktconf file)
+        public void ApplyConfig(ProtocolConfig config)
+        {
+            V2RayConfigPath.Text = config.V2RayConfigPath;
+        }
+
+        // Export config (used when saving to .lktconf file)
+        public ProtocolConfig ExportConfig()
+        {
+            return new ProtocolConfig
+            {
+                Protocol = "V2Ray",
+                V2RayConfigPath = V2RayConfigPath.Text
+            };
         }
 
         private void BrowseConfig_Click(object sender, RoutedEventArgs e)
@@ -30,7 +46,7 @@ namespace LKtunnel
 
             if (openFileDialog.ShowDialog() == true)
             {
-                V2RayConfigPath.Text = openFileDialog.FileName; // Update path
+                V2RayConfigPath.Text = openFileDialog.FileName;
             }
         }
 
@@ -79,10 +95,8 @@ namespace LKtunnel
 
         public void Connect_Click(object sender, RoutedEventArgs e)
         {
-            // Get the path of the V2Ray executable relative to the app's base directory
             string appDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            string v2rayPath = Path.Combine(appDirectory,@"V2Ray\v2ray.exe");
-
+            string v2rayPath = Path.Combine(appDirectory, @"V2Ray\v2ray.exe");
             string configPath = V2RayConfigPath.Text;
 
             if (!File.Exists(v2rayPath) || !File.Exists(configPath))
@@ -131,7 +145,6 @@ namespace LKtunnel
             }
         }
 
-
         public void Disconnect_Click(object sender, RoutedEventArgs e)
         {
             if (v2rayProcess != null && !v2rayProcess.HasExited)
@@ -159,7 +172,7 @@ namespace LKtunnel
         {
             try
             {
-                RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Internet Settings", true);
+                RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", true);
                 if (key != null)
                 {
                     key.SetValue("ProxyEnable", 1);
@@ -177,7 +190,7 @@ namespace LKtunnel
         {
             try
             {
-                RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Internet Settings", true);
+                RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", true);
                 if (key != null)
                 {
                     key.SetValue("ProxyEnable", 0);

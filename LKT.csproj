@@ -207,13 +207,16 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ConfigEncryption.cs" />
     <Compile Include="Dashboard.xaml.cs">
       <DependentUpon>Dashboard.xaml</DependentUpon>
     </Compile>
+    <Compile Include="IConfigurableProtocol.cs" />
     <Compile Include="LogGenerator.cs" />
     <Compile Include="Logs.xaml.cs">
       <DependentUpon>Logs.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ProtocolConfig.cs" />
     <Compile Include="Shadowsocks.xaml.cs">
       <DependentUpon>Shadowsocks.xaml</DependentUpon>
     </Compile>

@@ -15,6 +15,9 @@
                 <Button x:Name="BrowseConfigButton" Content="Browse Config" Width="120" Height="40" Margin="5" Click="BrowseConfigButton_Click"/>
             </StackPanel>
 
+            <!-- TextBox to show selected WireGuard Config File Path -->
+            <TextBox x:Name="WireGuardConfigPath" Width="300" Margin="10" IsReadOnly="True"/>
+
             <!-- Label to show VPN status -->
             <Label x:Name="VpnStatusLabel" FontSize="16" HorizontalAlignment="Center" Margin="10"/>
         </StackPanel>

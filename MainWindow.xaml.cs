@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Windows;
+using System.IO;
 using System.Windows.Controls;
+using Newtonsoft.Json;  // Add this for JSON serialization/deserialization
+using Microsoft.Win32;  // For OpenFileDialog and SaveFileDialog
+
 
 namespace LKtunnel
 {
@@ -151,17 +155,37 @@ namespace LKtunnel
         }
 
 
-        // Handle protocol selection from ComboBox
+        /// Handle protocol selection
         private void ProtocolComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ComboBoxItem selectedItem = ProtocolComboBox.SelectedItem as ComboBoxItem;
+            string selectedProtocol = (ProtocolComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
 
-            if (selectedItem != null)
+            if (string.IsNullOrEmpty(selectedProtocol)) return;
+
+            // Load the corresponding protocol user control
+            switch (selectedProtocol)
             {
-                string selectedProtocol = selectedItem.Content.ToString();
-                LoadProtocolPage(selectedProtocol);
+                case "OpenVPN":
+                    MainContent.Content = new OpenVPN();  // Load OpenVPN control
+                    break;
+                case "WireGuard":
+                    MainContent.Content = new WireGuard();  // Load WireGuard control
+                    break;
+                case "Shadowsocks":
+                    MainContent.Content = new ShadowSocks(); // Load Shadowsocks UserControl
+                    break;
+                case "SSH Tunneling":
+                    MainContent.Content = new SSH();  // Load SSH control
+                    break;
+                case "V2Ray":
+                    MainContent.Content = new V2Ray();  // Load V2Ray control
+                    break;
+                default:
+                    MainContent.Content = null;
+                    break;
             }
         }
+    
 
         // Load the page corresponding to the selected protocol
         // Load the page corresponding to the selected protocol
@@ -180,15 +204,15 @@ namespace LKtunnel
                     break;
 
                 case "Shadowsocks":
-                    MainContent.Content = new Shadowsocks(); // Load Shadowsocks UserControl
+                    MainContent.Content = new ShadowSocks(); // Load Shadowsocks UserControl
                     break;
 
                 case "V2Ray":
-                    MainContent.Content = v2rayControl; // V2Ray control
+                    MainContent.Content = new V2Ray(); // V2Ray control
                     break;
 
                 case "SSH Tunneling":
-                    MainContent.Content = sshControl; // SSH control
+                    MainContent.Content = new SSH(); // SSH control
                     break;
 
                 default:
@@ -293,5 +317,140 @@ namespace LKtunnel
         private void LogsTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
         }
+
+        // Import configuration from a JSON file
+        private void ImportButton_Click(object sender, RoutedEventArgs e)
+        {
+            var openFileDialog = new OpenFileDialog
+            {
+                Filter = "LK Tunnel Config (*.lktconf)|*.lktconf|JSON Files (*.json)|*.json",
+                Title = "Import VPN Configuration"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    string json = File.ReadAllText(openFileDialog.FileName);
+                    var config = JsonConvert.DeserializeObject<ProtocolConfig>(json);
+
+                    if (config == null || string.IsNullOrEmpty(config.Protocol))
+                    {
+                        LogMessage("Invalid configuration file.");
+                        return;
+                    }
+
+                    // Set Protocol dropdown
+                    foreach (ComboBoxItem item in ProtocolComboBox.Items)
+                    {
+                        if (item.Content.ToString() == config.Protocol)
+                        {
+                            ProtocolComboBox.SelectedItem = item;
+                            break;
+                        }
+                    }
+
+                    // Apply UI & UserControl
+                    ApplyConfig(config);
+
+                    LogMessage("Configuration imported successfully.");
+                }
+                catch (Exception ex)
+                {
+                    LogMessage($"Error importing configuration: {ex.Message}");
+                }
+            }
+        }
+
+
+
+        // Apply the imported configuration to the UI
+        private void ApplyConfig(ProtocolConfig config)
+        {
+            // Set values to UI components based on the imported config
+            ProtocolComboBox.SelectedItem = config.Protocol;
+            // Apply specific protocol configuration logic
+            switch (config.Protocol)
+            {
+                case "OpenVPN":
+                    MainContent.Content = new OpenVPN();
+                    (MainContent.Content as OpenVPN)?.ApplyConfig(config);  // Apply config to OpenVPN control
+                    break;
+                case "WireGuard":
+                    MainContent.Content = new WireGuard();
+                    (MainContent.Content as WireGuard)?.ApplyConfig(config);  // Apply config to WireGuard control
+                    break;
+                case "SSH Tunneling":
+                    MainContent.Content = new SSH();
+                    (MainContent.Content as SSH)?.ApplyConfig(config);  // Apply config to SSH control
+                    break;
+                case "V2Ray":
+                    MainContent.Content = new V2Ray();
+                    (MainContent.Content as V2Ray)?.ApplyConfig(config);  // Apply config to V2Ray control
+                    break;
+                default:
+                    MainContent.Content = null; // Default to empty content if no valid protocol
+                    break;
+            }
+        }
+
+
+
+        // Export configuration to a JSON file
+        private void ExportButton_Click(object sender, RoutedEventArgs e)
+        {
+            var saveFileDialog = new SaveFileDialog
+            {
+                Filter = "LK Tunnel Config (*.lktconf)|*.lktconf|JSON Files (*.json)|*.json",
+                Title = "Save VPN Configuration"
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    if (MainContent.Content is IConfigurableProtocol protocolControl)
+                    {
+                        ProtocolConfig config = protocolControl.ExportConfig();
+
+                        // Save selected protocol to the config object
+                        config.Protocol = (ProtocolComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
+
+                        // Serialize and save
+                        string json = JsonConvert.SerializeObject(config, Formatting.Indented);
+                        File.WriteAllText(saveFileDialog.FileName, json);
+
+                        LogMessage("Configuration exported successfully.");
+                    }
+                    else
+                    {
+                        LogMessage("Current protocol does not support export.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogMessage($"Error exporting configuration: {ex.Message}");
+                }
+            }
+        }
+
     }
 }
+
+// Configuration class for all protocol settings
+public class ProtocolConfig
+{
+    public string Protocol { get; set; }
+    public string SSHHost { get; set; }
+    public string SSHPort { get; set; }
+    public string SSHUsername { get; set; }
+    public string SSHPassword { get; set; }
+    public string WireGuardConfigPath { get; set; }
+    public string OpenVPNConfigPath { get; set; }
+    public string V2RayConfigPath { get; set; }
+    public string ShadowSocksConfigPath { get; set; }
+}
+
+
+
+

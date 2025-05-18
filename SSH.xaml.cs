@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 namespace LKtunnel
 {
-    public partial class SSH : UserControl
+    public partial class SSH : UserControl, IConfigurableProtocol
     {
         private SshClient sshClient;
         private ForwardedPortDynamic portForwarding;
@@ -20,6 +20,28 @@ namespace LKtunnel
         public SSH()
         {
             InitializeComponent();
+        }
+
+        // Apply config from .lktconf
+        public void ApplyConfig(ProtocolConfig config)
+        {
+            SSHHost.Text = config.SSHHost;
+            SSHPort.Text = config.SSHPort;
+            SSHUsername.Text = config.SSHUsername;
+            SSHPassword.Password = config.SSHPassword;
+        }
+
+        // Export config to .lktconf
+        public ProtocolConfig ExportConfig()
+        {
+            return new ProtocolConfig
+            {
+                Protocol = "SSH Tunneling",
+                SSHHost = SSHHost.Text,
+                SSHPort = SSHPort.Text,
+                SSHUsername = SSHUsername.Text,
+                SSHPassword = SSHPassword.Password
+            };
         }
 
         private void Log(string message)

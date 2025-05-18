@@ -9,7 +9,7 @@ using Microsoft.Win32;
 
 namespace LKtunnel
 {
-    public partial class WireGuard : UserControl
+    public partial class WireGuard : UserControl, IConfigurableProtocol
     {
         private Process wireguardProcess;
         private MainWindow mainWindow;
@@ -22,8 +22,31 @@ namespace LKtunnel
             mainWindow = Application.Current.MainWindow as MainWindow;
         }
 
+        // Import configuration
+        public void ApplyConfig(ProtocolConfig config)
+        {
+            configPath = config.WireGuardConfigPath;
+
+            if (WireGuardConfigPath != null)
+            {
+                WireGuardConfigPath.Text = config.WireGuardConfigPath;
+            }
+        }
+
+        // Export configuration
+        public ProtocolConfig ExportConfig()
+        {
+            return new ProtocolConfig
+            {
+                Protocol = "WireGuard",
+                WireGuardConfigPath = WireGuardConfigPath?.Text ?? configPath
+            };
+        }
+
         private async void Connect_Click(object sender, RoutedEventArgs e)
         {
+            configPath = WireGuardConfigPath.Text;
+
             if (!File.Exists(WireGuardPath))
             {
                 ShowError("WireGuard not found at default location!");
@@ -41,23 +64,21 @@ namespace LKtunnel
                 UpdateStatus("Connecting...", Brushes.Orange);
                 LogMessage($"Starting WireGuard with config: {configPath}");
 
-                // Start WireGuard as admin
                 wireguardProcess = new Process
                 {
                     StartInfo = new ProcessStartInfo
                     {
                         FileName = WireGuardPath,
                         Arguments = $"/installtunnelservice \"{configPath}\"",
-                        Verb = "runas", // Run as admin
+                        Verb = "runas",
                         UseShellExecute = true,
                         WindowStyle = ProcessWindowStyle.Hidden
                     }
                 };
 
                 wireguardProcess.Start();
-                await Task.Delay(1000); // Give it time to start
+                await Task.Delay(1000);
 
-                // Verify connection
                 if (IsWireGuardRunning())
                 {
                     UpdateStatus("Connected", Brushes.Green);
@@ -79,7 +100,6 @@ namespace LKtunnel
         {
             try
             {
-                // First try the proper uninstall method
                 var uninstallProcess = new Process
                 {
                     StartInfo = new ProcessStartInfo
@@ -92,10 +112,10 @@ namespace LKtunnel
                         CreateNoWindow = true
                     }
                 };
-                uninstallProcess.Start();
-                uninstallProcess.WaitForExit(5000); // Wait up to 5 seconds
 
-                // Double-check and kill any remaining processes
+                uninstallProcess.Start();
+                uninstallProcess.WaitForExit(5000);
+
                 foreach (var process in Process.GetProcessesByName("wireguard"))
                 {
                     try
@@ -106,10 +126,9 @@ namespace LKtunnel
                             process.WaitForExit(1000);
                         }
                     }
-                    catch { /* Ignore any errors in cleanup */ }
+                    catch { }
                 }
 
-                // Additional cleanup for wg.exe processes
                 foreach (var process in Process.GetProcessesByName("wg"))
                 {
                     try
@@ -120,7 +139,7 @@ namespace LKtunnel
                             process.WaitForExit(1000);
                         }
                     }
-                    catch { /* Ignore */ }
+                    catch { }
                 }
 
                 UpdateStatus("Disconnected", Brushes.Red);
@@ -131,7 +150,6 @@ namespace LKtunnel
                 LogMessage($"Disconnect error: {ex.Message}");
                 UpdateStatus("Disconnect Failed", Brushes.Orange);
 
-                // Fallback: Try netsh command to disable the interface
                 try
                 {
                     var netshProcess = new Process
@@ -145,6 +163,7 @@ namespace LKtunnel
                             WindowStyle = ProcessWindowStyle.Hidden
                         }
                     };
+
                     netshProcess.Start();
                     netshProcess.WaitForExit(3000);
 
@@ -182,11 +201,11 @@ namespace LKtunnel
             if (dialog.ShowDialog() == true)
             {
                 configPath = dialog.FileName;
+                WireGuardConfigPath.Text = configPath;
                 LogMessage($"Selected config: {configPath}");
             }
         }
 
-        // Helper methods
         private void UpdateStatus(string status, Brush color)
         {
             Dispatcher.Invoke(() =>

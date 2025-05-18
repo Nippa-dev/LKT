@@ -5,11 +5,8 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <!-- Row for buttons -->
             <RowDefinition Height="*"/>
-            <!-- Row for the main content -->
             <RowDefinition Height="Auto"/>
-            <!-- Row for logs -->
         </Grid.RowDefinitions>
 
         <!-- Connect/Disconnect Button -->
@@ -30,11 +27,16 @@
             <ComboBoxItem Content="SSH Tunneling"/>
         </ComboBox>
 
-        <!-- Main Content Area -->
+        <!-- Import Button -->
+        <Button x:Name="ImportButton" Content="Import Config" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" Click="ImportButton_Click" Margin="500,10,0,0" Grid.Row="0"/>
+
+        <!-- Export Button -->
+        <Button x:Name="ExportButton" Content="Export Config" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" Click="ExportButton_Click" Margin="610,10,0,0" Grid.Row="0"/>
+
+        <!-- Main Content Area (for protocol-specific user controls) -->
         <ContentControl x:Name="MainContent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,10,0,0" Grid.Row="1"/>
 
         <!-- Logs Section (always visible) -->
         <TextBox x:Name="LogsTextBox" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Margin="0,0,0,10" Height="100" IsReadOnly="True" VerticalScrollBarVisibility="Auto" TextChanged="LogsTextBox_TextChanged" Grid.Row="2"/>
-
     </Grid>
 </Window>
