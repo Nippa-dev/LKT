@@ -16,6 +16,7 @@ namespace LKtunnel
         private ForwardedPortDynamic portForwarding;
         private bool isConnected = false;
         public TextBox MainWindowLogsTextBox { get; set; }
+        private ProtocolConfig storedConfig;
 
         public SSH()
         {
@@ -25,10 +26,34 @@ namespace LKtunnel
         // Apply config from .lktconf
         public void ApplyConfig(ProtocolConfig config)
         {
-            SSHHost.Text = config.SSHHost;
-            SSHPort.Text = config.SSHPort;
-            SSHUsername.Text = config.SSHUsername;
-            SSHPassword.Password = config.SSHPassword;
+            if (config.IsLocked)
+            {
+                // Allow connection, but hide sensitive info
+                SSHHost.Text = "[Locked]";
+                SSHPort.Text = "[Locked]";
+                SSHUsername.Text = "[Locked]";
+                SSHPassword.Password = "";
+
+                SSHHost.IsEnabled = false;
+                SSHPort.IsEnabled = false;
+                SSHUsername.IsEnabled = false;
+                SSHPassword.IsEnabled = false;
+            }
+            else
+            {
+                SSHHost.Text = config.SSHHost;
+                SSHPort.Text = config.SSHPort;
+                SSHUsername.Text = config.SSHUsername;
+                SSHPassword.Password = config.SSHPassword;
+
+                SSHHost.IsEnabled = true;
+                SSHPort.IsEnabled = true;
+                SSHUsername.IsEnabled = true;
+                SSHPassword.IsEnabled = true;
+            }
+
+            // You can still store values internally to use when Connect_Click runs
+            storedConfig = config;
         }
 
         // Export config to .lktconf

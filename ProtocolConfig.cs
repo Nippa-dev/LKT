@@ -19,5 +19,7 @@ namespace LKtunnel
         public string OpenVPNConfigPath { get; set; }
         public string V2RayConfigPath { get; set; }
         public string ShadowSocksConfigPath { get; set; }
+        public bool IsLocked { get; set; }
+
     }
 }

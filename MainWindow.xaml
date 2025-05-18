@@ -17,7 +17,7 @@
 
         <!-- Dark/Light Mode Toggle Switch -->
         <ToggleButton x:Name="DarkModeToggleButton" Content="Dark Mode" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" Margin="230,10,0,0" Checked="DarkModeToggleButton_Checked" Unchecked="DarkModeToggleButton_Unchecked" Grid.Row="0"/>
-
+        
         <!-- Protocol ComboBox (Example for selection) -->
         <ComboBox x:Name="ProtocolComboBox" HorizontalAlignment="Left" VerticalAlignment="Top" Width="150" Height="30" Margin="340,10,0,0" SelectionChanged="ProtocolComboBox_SelectionChanged" Grid.Row="0">
             <ComboBoxItem Content="OpenVPN"/>
@@ -32,7 +32,10 @@
 
         <!-- Export Button -->
         <Button x:Name="ExportButton" Content="Export Config" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" Height="30" Click="ExportButton_Click" Margin="610,10,0,0" Grid.Row="0"/>
-
+        
+        <!-- ✅ Cloud Import Button -->
+        <Button x:Name="CloudImportButton" Content="Import from Cloud" HorizontalAlignment="Left" VerticalAlignment="Top" Width="130" Height="30" Click="ImportFromCloud_Click" Margin="720,10,0,0" Grid.Row="0"/>
+        
         <!-- Main Content Area (for protocol-specific user controls) -->
         <ContentControl x:Name="MainContent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,10,0,0" Grid.Row="1"/>
 

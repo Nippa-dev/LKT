@@ -331,8 +331,29 @@ namespace LKtunnel
             {
                 try
                 {
-                    string json = File.ReadAllText(openFileDialog.FileName);
-                    var config = JsonConvert.DeserializeObject<ProtocolConfig>(json);
+                    string fileContent = File.ReadAllText(openFileDialog.FileName);
+                    ProtocolConfig config = null;
+
+                    // 🔍 Try parse as unlocked JSON
+                    try
+                    {
+                        config = JsonConvert.DeserializeObject<ProtocolConfig>(fileContent);
+                    }
+                    catch
+                    {
+                        // 🔐 Ask for decryption password if normal JSON fails
+                        string password = PromptPassword("Enter password to unlock this configuration:");
+                        try
+                        {
+                            string decrypted = ConfigEncryption.Decrypt(fileContent, password);
+                            config = JsonConvert.DeserializeObject<ProtocolConfig>(decrypted);
+                        }
+                        catch (Exception ex)
+                        {
+                            LogMessage("Failed to decrypt or parse configuration: " + ex.Message);
+                            return;
+                        }
+                    }
 
                     if (config == null || string.IsNullOrEmpty(config.Protocol))
                     {
@@ -350,9 +371,8 @@ namespace LKtunnel
                         }
                     }
 
-                    // Apply UI & UserControl
+                    // Load into UserControl
                     ApplyConfig(config);
-
                     LogMessage("Configuration imported successfully.");
                 }
                 catch (Exception ex)
@@ -361,6 +381,7 @@ namespace LKtunnel
                 }
             }
         }
+
 
 
 
@@ -399,9 +420,16 @@ namespace LKtunnel
         // Export configuration to a JSON file
         private void ExportButton_Click(object sender, RoutedEventArgs e)
         {
+            var result = MessageBox.Show("Do you want to export config as LOCKED (encrypted)?",
+                                         "Export Mode",
+                                         MessageBoxButton.YesNoCancel,
+                                         MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Cancel) return;
+
             var saveFileDialog = new SaveFileDialog
             {
-                Filter = "LK Tunnel Config (*.lktconf)|*.lktconf|JSON Files (*.json)|*.json",
+                Filter = "LK Tunnel Config (*.lktconf)|*.lktconf",
                 Title = "Save VPN Configuration"
             };
 
@@ -412,27 +440,111 @@ namespace LKtunnel
                     if (MainContent.Content is IConfigurableProtocol protocolControl)
                     {
                         ProtocolConfig config = protocolControl.ExportConfig();
-
-                        // Save selected protocol to the config object
                         config.Protocol = (ProtocolComboBox.SelectedItem as ComboBoxItem)?.Content.ToString();
 
-                        // Serialize and save
-                        string json = JsonConvert.SerializeObject(config, Formatting.Indented);
-                        File.WriteAllText(saveFileDialog.FileName, json);
+                        // ✅ Mark the config as locked or unlocked
+                        config.IsLocked = (result == MessageBoxResult.Yes);
+
+                        string json = Newtonsoft.Json.JsonConvert.SerializeObject(config, Formatting.Indented);
+
+                        if (config.IsLocked)
+                        {
+                            string key = PromptPassword("Enter a password to lock the config:");
+                            string encrypted = ConfigEncryption.Encrypt(json, key);
+                            File.WriteAllText(saveFileDialog.FileName, encrypted);
+                        }
+                        else
+                        {
+                            File.WriteAllText(saveFileDialog.FileName, json);
+                        }
 
                         LogMessage("Configuration exported successfully.");
-                    }
-                    else
-                    {
-                        LogMessage("Current protocol does not support export.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    LogMessage($"Error exporting configuration: {ex.Message}");
+                    LogMessage("Export failed: " + ex.Message);
                 }
             }
         }
+
+        private string PromptPassword(string title)
+        {
+            var inputDialog = new PasswordDialog(title);
+            if (inputDialog.ShowDialog() == true)
+            {
+                return inputDialog.PasswordInput;
+            }
+            return "";
+        }
+        private async void ImportFromCloud_Click(object sender, RoutedEventArgs e)
+        {
+            string url = PromptInput("Enter the full URL to the cloud config:");
+
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                LogMessage("Cloud config import cancelled.");
+                return;
+            }
+
+            try
+            {
+                using (var client = new System.Net.WebClient())
+                {
+                    string fileContent = await client.DownloadStringTaskAsync(url);
+                    ProtocolConfig config = null;
+
+                    // Try plain JSON first
+                    try
+                    {
+                        config = JsonConvert.DeserializeObject<ProtocolConfig>(fileContent);
+                    }
+                    catch
+                    {
+                        // Try decrypt
+                        string password = PromptPassword("Enter password to unlock cloud config:");
+                        string decrypted = ConfigEncryption.Decrypt(fileContent, password);
+                        config = JsonConvert.DeserializeObject<ProtocolConfig>(decrypted);
+                    }
+
+                    if (config == null || string.IsNullOrEmpty(config.Protocol))
+                    {
+                        LogMessage("Invalid or corrupted config from cloud.");
+                        return;
+                    }
+
+                    // Set protocol
+                    foreach (ComboBoxItem item in ProtocolComboBox.Items)
+                    {
+                        if (item.Content.ToString() == config.Protocol)
+                        {
+                            ProtocolComboBox.SelectedItem = item;
+                            break;
+                        }
+                    }
+
+                    ApplyConfig(config);
+                    LogMessage("Cloud config imported successfully.");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogMessage("Failed to import config from cloud: " + ex.Message);
+            }
+        }
+        private string PromptInput(string title)
+        {
+            var inputDialog = new InputDialog(title); // We'll create this next
+            if (inputDialog.ShowDialog() == true)
+                return inputDialog.TextInput;
+
+            return "";
+        }
+
+
+
+
+
 
     }
 }
@@ -449,6 +561,8 @@ public class ProtocolConfig
     public string OpenVPNConfigPath { get; set; }
     public string V2RayConfigPath { get; set; }
     public string ShadowSocksConfigPath { get; set; }
+    public bool IsLocked { get; set; }  // ✅ Add this
+
 }
 
 

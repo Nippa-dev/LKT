@@ -212,9 +212,15 @@
       <DependentUpon>Dashboard.xaml</DependentUpon>
     </Compile>
     <Compile Include="IConfigurableProtocol.cs" />
+    <Compile Include="InputDialog.xaml.cs">
+      <DependentUpon>InputDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="LogGenerator.cs" />
     <Compile Include="Logs.xaml.cs">
       <DependentUpon>Logs.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="PasswordDialog.xaml.cs">
+      <DependentUpon>PasswordDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="ProtocolConfig.cs" />
     <Compile Include="Shadowsocks.xaml.cs">
@@ -230,6 +236,10 @@
       <DependentUpon>WireGuard.xaml</DependentUpon>
     </Compile>
     <Page Include="Dashboard.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="InputDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -250,6 +260,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="OpenVPN.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="PasswordDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
